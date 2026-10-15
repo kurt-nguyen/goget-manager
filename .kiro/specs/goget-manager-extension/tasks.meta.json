@@ -1,0 +1,749 @@
+{
+  "pbtResults": {
+    "2.2 Write property test for the code point comparator": {
+      "status": "passed",
+      "lastRunTimestamp": 1791970958312
+    },
+    "2.6 Write property test for the keyed debouncer": {
+      "status": "passed",
+      "lastRunTimestamp": 1791970970336
+    },
+    "2.4 Write property test for search text clamping": {
+      "status": "passed",
+      "lastRunTimestamp": 1791970975534
+    },
+    "3.5 Write property test for noise invariance": {
+      "status": "passed",
+      "lastRunTimestamp": 1791972897168
+    },
+    "3.8 Write property test for the print/parse round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1791972899773
+    },
+    "3.7 Write property test for printer structure": {
+      "status": "passed",
+      "lastRunTimestamp": 1791972903653
+    },
+    "3.4 Write property test for parse order": {
+      "status": "passed",
+      "lastRunTimestamp": 1791972904310
+    },
+    "3.6 Write property test for malformed input": {
+      "status": "passed",
+      "lastRunTimestamp": 1791972926007
+    },
+    "5.4 Write property test for per-file children": {
+      "status": "passed",
+      "lastRunTimestamp": 1791973257061
+    },
+    "5.6 Write property test for root structure": {
+      "status": "passed",
+      "lastRunTimestamp": 1791973266051
+    },
+    "5.7 Write property test for package tree items": {
+      "status": "passed",
+      "lastRunTimestamp": 1791974213947
+    },
+    "5.8 Write property test for error isolation": {
+      "status": "passed",
+      "lastRunTimestamp": 1791974219678
+    }
+  },
+  "executionHistory": {
+    "1.1 Create project structure, build, and test tooling": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970541748
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970550364
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970744054
+      }
+    ],
+    "1.2 Write manifest smoke tests": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542065
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970751474
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970906836
+      }
+    ],
+    "2.1 Implement `src/core/compare.ts` and `src/core/messages.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542171
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970751938
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970907051
+      }
+    ],
+    "2.2 Write property test for the code point comparator": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542230
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970910768
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972794993
+      }
+    ],
+    "2.3 Implement `src/core/searchText.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542290
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970752740
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970907108
+      }
+    ],
+    "2.4 Write property test for search text clamping": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542365
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970911297
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972794523
+      }
+    ],
+    "2.5 Implement `src/core/debouncer.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542418
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970753318
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970906995
+      }
+    ],
+    "2.6 Write property test for the keyed debouncer": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542485
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970912098
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972794607
+      }
+    ],
+    "3.1 Implement `src/core/goModParser.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542545
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970753866
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970906738
+      }
+    ],
+    "3.2 Implement `src/core/requirePrinter.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542604
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970912620
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972796191
+      }
+    ],
+    "3.3 Create shared fast-check generators for the parser": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542665
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970913202
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972795532
+      }
+    ],
+    "3.4 Write property test for parse order": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542720
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972864649
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972936304
+      }
+    ],
+    "3.5 Write property test for noise invariance": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542779
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972864717
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972937068
+      }
+    ],
+    "3.6 Write property test for malformed input": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542836
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972865218
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972937576
+      }
+    ],
+    "3.7 Write property test for printer structure": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542888
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972866053
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972938368
+      }
+    ],
+    "3.8 Write property test for the print/parse round trip": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970542949
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972866508
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972938918
+      }
+    ],
+    "3.9 Write parser unit tests": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543010
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972943154
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973061303
+      }
+    ],
+    "4. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543068
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975133488
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975159407
+      }
+    ],
+    "5.1 Implement `src/core/installedModel.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543129
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972805813
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972860427
+      }
+    ],
+    "5.2 Implement `src/core/treeItemProps.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543187
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972943689
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973061471
+      }
+    ],
+    "5.3 Add snapshot generators to the shared arbitraries": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543286
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973068218
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973198084
+      }
+    ],
+    "5.4 Write property test for per-file children": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543348
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973206349
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974177061
+      }
+    ],
+    "5.5 Write property test for sorting": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543405
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973206415
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974177861
+      }
+    ],
+    "5.6 Write property test for root structure": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543466
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973206701
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974178478
+      }
+    ],
+    "5.7 Write property test for package tree items": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543529
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974182147
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974228590
+      }
+    ],
+    "5.8 Write property test for error isolation": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543587
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974182865
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974228177
+      }
+    ],
+    "5.9 Write model unit tests": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543648
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973068321
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973197865
+      }
+    ],
+    "6. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543714
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975165577
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975193911
+      }
+    ],
+    "7.1 Implement `src/vscode/goModRepository.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543768
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972944517
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973061531
+      }
+    ],
+    "7.2 Write repository unit tests with fakes": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543822
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973068456
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973197975
+      }
+    ],
+    "7.3 Implement `src/vscode/installedTreeProvider.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543885
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973069242
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973198216
+      }
+    ],
+    "7.4 Write tree provider unit tests": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970543946
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973206192
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974176279
+      }
+    ],
+    "8.1 Implement the webview script and stylesheet": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970544001
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972945023
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973062821
+      }
+    ],
+    "8.2 Implement `src/vscode/searchViewProvider.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970544060
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972945829
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973062271
+      }
+    ],
+    "8.3 Write Search view unit tests": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970544162
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973069788
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973198159
+      }
+    ],
+    "9.1 Implement `src/extension.ts`": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970544226
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973206276
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974175529
+      }
+    ],
+    "9.2 Write integration tests in the VS Code host": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970544283
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974232237
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975128275
+      }
+    ],
+    "10. Final checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970544337
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975197573
+      },
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975251813
+      }
+    ],
+    "1. Set up project scaffolding and extension manifest": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791970906934
+      }
+    ],
+    "2. Implement core utilities": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791972795057
+      }
+    ],
+    "3. Implement the go.mod parser and require printer": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973061401
+      }
+    ],
+    "8. Implement the Search webview": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791973198286
+      }
+    ],
+    "7. Implement the VS Code adapter for the Installed view": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974176346
+      }
+    ],
+    "5. Implement the installed-tree model": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791974228659
+      }
+    ],
+    "9. Wire the extension together": [
+      {
+        "executionId": "ce4a3714-7db1-4f89-b61b-d2bfa27f68d3",
+        "chatSessionId": "sess_90eda0e7-c4de-4638-85b7-31cc6f8c318a",
+        "timestamp": 1791975128382
+      }
+    ]
+  }
+}

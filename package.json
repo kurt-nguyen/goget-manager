@@ -1,0 +1,81 @@
+{
+  "name": "goget-manager",
+  "displayName": "Goget Manager",
+  "description": "Browse the Go packages installed in your workspace from the Activity Bar.",
+  "version": "0.0.1",
+  "publisher": "goget-manager",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "imgs/goget-manager-icon.png",
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "goget-manager",
+          "title": "Goget Manager",
+          "icon": "imgs/goget-manager-icon.png"
+        }
+      ]
+    },
+    "views": {
+      "goget-manager": [
+        {
+          "id": "gogetManager.search",
+          "name": "Search",
+          "type": "webview"
+        },
+        {
+          "id": "gogetManager.installed",
+          "name": "Installed"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "gogetManager.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "category": "Goget Manager"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "gogetManager.refresh",
+          "when": "view == gogetManager.installed",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest --run",
+    "build:integration": "node esbuild.integration.mjs",
+    "pretest:integration": "npm run build && npm run build:integration",
+    "test:integration": "vscode-test",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/mocha": "10.0.10",
+    "@types/node": "20.19.43",
+    "@types/vscode": "1.85.0",
+    "@vscode/test-cli": "0.0.15",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "fast-check": "4.10.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}
