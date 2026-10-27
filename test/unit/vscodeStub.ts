@@ -45,6 +45,10 @@ export class Uri {
     return i < 0 ? new Uri('file', value) : new Uri(value.slice(0, i), value.slice(i + 1).replace(/^\/\//, ''));
   }
 
+  static joinPath(base: Uri, ...segments: string[]): Uri {
+    return new Uri(base.scheme, [base.path.replace(/\/+$/, ''), ...segments].join('/'));
+  }
+
   get fsPath(): string {
     return this.path;
   }

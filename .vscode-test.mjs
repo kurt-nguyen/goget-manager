@@ -14,8 +14,8 @@ rmSync(scratchRoot, { recursive: true, force: true });
 mkdirSync(scratchRoot, { recursive: true });
 
 /** Copies a fixture directory into the scratch area and returns the copy's path. */
-function scratchCopy(name) {
-  const target = join(scratchRoot, name);
+function scratchCopy(name, copyName = name) {
+  const target = join(scratchRoot, copyName);
   cpSync(join(fixturesRoot, name), target, { recursive: true });
   return target;
 }
@@ -35,4 +35,5 @@ export default defineConfig([
   configFor('single-folder', scratchCopy('single-folder')),
   configFor('multi-root', join(scratchCopy('multi-root'), 'multi.code-workspace')),
   configFor('no-go-mod', scratchCopy('no-go-mod')),
+  configFor('search', scratchCopy('single-folder', 'search-single-folder')),
 ]);

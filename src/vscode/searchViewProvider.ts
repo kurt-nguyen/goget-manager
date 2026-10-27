@@ -1,5 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
+import type { SearchController } from '../core/searchController';
+import { parseWebviewMessage, type HostToWebview, type SearchViewModel } from '../core/searchProtocol';
 
 /**
  * Pure HTML builder for the Search webview. Intentionally free of any
@@ -23,6 +25,9 @@ export function buildSearchHtml(
 </head>
 <body>
   <input id="search" type="text" maxlength="256" placeholder="Search Go packages" aria-label="Search Go packages" spellcheck="false" autocomplete="off">
+  <div id="loading" class="loading" hidden aria-hidden="true"><div class="loading-bar"></div></div>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <ul id="results" class="results" aria-label="Search results"></ul>
   <script nonce="${nonce}" src="${jsUri}"></script>
 </body>
 </html>`;
@@ -33,12 +38,26 @@ function generateNonce(): string {
   return randomBytes(16).toString('base64');
 }
 
-export class SearchViewProvider implements vscode.WebviewViewProvider {
+/** Only the SearchViewModel keys are sent to the webview. */
+function toPostedState(state: SearchViewModel): SearchViewModel {
+  return {
+    results: state.results,
+    status: state.status,
+    loading: state.loading,
+    resultsVersion: state.resultsVersion,
+  };
+}
+
+export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   static readonly viewId = 'gogetManager.search';
 
   private resolved = false;
+  private viewSubscriptions: vscode.Disposable[] = [];
 
-  constructor(private readonly extensionUri: vscode.Uri) {}
+  constructor(
+    private readonly extensionUri: vscode.Uri,
+    private readonly controller: SearchController,
+  ) {}
 
   /** True once VS Code has asked this provider to resolve the view (read by the test API). */
   get isResolved(): boolean {
@@ -47,6 +66,8 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(view: vscode.WebviewView): void {
     this.resolved = true;
+    this.disposeViewSubscriptions();
+    const webview = view.webview;
     const mediaRoot = vscode.Uri.joinPath(this.extensionUri, 'media');
     view.webview.options = {
       enableScripts: true,
@@ -62,5 +83,49 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       cssUri.toString(),
       jsUri.toString(),
     );
+
+    const post = (state: SearchViewModel): void => {
+      const message: HostToWebview = { type: 'state', state: toPostedState(state) };
+      void Promise.resolve(webview.postMessage(message)).catch(() => undefined);
+    };
+
+    this.viewSubscriptions.push(
+      webview.onDidReceiveMessage((raw: unknown) => {
+        const message = parseWebviewMessage(raw);
+        if (message === undefined) {
+          return;
+        }
+        switch (message.type) {
+          case 'ready':
+            post(this.controller.state);
+            break;
+          case 'query':
+            this.controller.queryChanged(message.text);
+            break;
+          case 'submit':
+            this.controller.submit(message.text);
+            break;
+          case 'open':
+            void this.controller.open(message.resultsVersion, message.index);
+            break;
+        }
+      }),
+      this.controller.onDidChangeState(post),
+      view.onDidDispose(() => {
+        this.disposeViewSubscriptions();
+      }),
+    );
+  }
+
+  dispose(): void {
+    this.disposeViewSubscriptions();
+  }
+
+  private disposeViewSubscriptions(): void {
+    const subscriptions = this.viewSubscriptions;
+    this.viewSubscriptions = [];
+    for (const subscription of subscriptions) {
+      subscription.dispose();
+    }
   }
 }

@@ -6,6 +6,7 @@
 
 import * as vscode from 'vscode';
 import type { InstalledNode } from '../core/installedModel';
+import type { SearchViewModel } from '../core/searchProtocol';
 
 /** A rendered tree row: the plain-data view of a `vscode.TreeItem` plus its children. */
 export interface TreeNodeSnapshot {
@@ -23,12 +24,19 @@ export interface GogetManagerApi {
   isInstalledViewVisible(): boolean;
   /** Whether VS Code has resolved the Search webview view at least once. */
   isSearchViewResolved(): boolean;
+  /** The current Search view state. */
+  getSearchState(): SearchViewModel;
+  /** Submits a search as if Enter was pressed. Present only when running in the Test extension mode. */
+  submitSearchForTest?(text: string): void;
 }
 
 export interface TestApiSources {
   readonly treeProvider: vscode.TreeDataProvider<InstalledNode>;
   readonly treeView: { readonly visible: boolean };
   readonly searchProvider: { readonly isResolved: boolean };
+  readonly searchController: { readonly state: SearchViewModel; submit(text: string): void };
+  /** True only when `context.extensionMode === vscode.ExtensionMode.Test`. */
+  readonly testMode: boolean;
 }
 
 function collapsibleName(state: vscode.TreeItemCollapsibleState | undefined): TreeNodeSnapshot['collapsibleState'] {
@@ -50,7 +58,7 @@ function textOf(value: string | vscode.MarkdownString | undefined): string | und
 }
 
 export function createTestApi(sources: TestApiSources): GogetManagerApi {
-  const { treeProvider, treeView, searchProvider } = sources;
+  const { treeProvider, treeView, searchProvider, searchController, testMode } = sources;
 
   const snapshotNodes = (nodes: readonly InstalledNode[]): TreeNodeSnapshot[] =>
     nodes.map((node) => {
@@ -72,5 +80,7 @@ export function createTestApi(sources: TestApiSources): GogetManagerApi {
     getInstalledTree: () => snapshotNodes((treeProvider.getChildren(undefined) ?? []) as InstalledNode[]),
     isInstalledViewVisible: () => treeView.visible,
     isSearchViewResolved: () => searchProvider.isResolved,
+    getSearchState: () => searchController.state,
+    ...(testMode ? { submitSearchForTest: (text: string) => searchController.submit(text) } : {}),
   };
 }

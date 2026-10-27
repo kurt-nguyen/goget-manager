@@ -1,4 +1,6 @@
+import type { HostToWebview, SearchViewModel, WebviewToHost } from '../core/searchProtocol';
 import { clampSearchText } from '../core/searchText';
+import { renderState, type DomLike, type NodeLike, type RenderElements } from './render';
 
 interface SearchViewState {
   text: string;
@@ -7,13 +9,49 @@ interface SearchViewState {
 interface WebviewApi {
   getState(): SearchViewState | undefined;
   setState(state: SearchViewState): void;
+  postMessage(message: WebviewToHost): void;
 }
 
 declare function acquireVsCodeApi(): WebviewApi;
 
-// Search_Box script. It only persists the text through the webview state API
-// and suppresses the default Enter behavior. It never posts messages, so the
-// extension host does no work in response to search input.
+type DomNode = Node & NodeLike;
+
+/** Adapts the real `document` to the small surface used by `renderState`. */
+const realDom: DomLike<DomNode> = {
+  createElement: (tag) => document.createElement(tag) as unknown as DomNode,
+  createTextNode: (text) => document.createTextNode(text) as unknown as DomNode,
+  replaceChildren: (parent, children) => (parent as unknown as Element).replaceChildren(...children),
+  setAttribute: (node, name, value) => (node as unknown as Element).setAttribute(name, value),
+};
+
+function isStateMessage(data: unknown): data is HostToWebview {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const record = data as Record<string, unknown>;
+  const state = record.state as Partial<SearchViewModel> | null | undefined;
+  return (
+    record.type === 'state' &&
+    typeof state === 'object' &&
+    state !== null &&
+    Array.isArray(state.results) &&
+    typeof state.status === 'string' &&
+    typeof state.loading === 'boolean' &&
+    typeof state.resultsVersion === 'number'
+  );
+}
+
+function parseIndex(value: string | null): number | undefined {
+  if (value === null || !/^\d+$/.test(value)) {
+    return undefined;
+  }
+  const n = Number(value);
+  return Number.isSafeInteger(n) ? n : undefined;
+}
+
+// Search_Box script. It persists the text through the webview state API, tells
+// the host about typing (`query`), Enter (`submit`), and result clicks (`open`),
+// and renders the host's view state. It never builds markup from strings.
 (function main(): void {
   const vscode = acquireVsCodeApi();
   const input = document.getElementById('search') as HTMLInputElement | null;
@@ -25,12 +63,50 @@ declare function acquireVsCodeApi(): WebviewApi;
   input.value = saved?.text ?? '';
 
   input.addEventListener('input', () => {
-    vscode.setState({ text: clampSearchText(input.value) });
+    const text = clampSearchText(input.value);
+    vscode.setState({ text });
+    vscode.postMessage({ type: 'query', text });
   });
 
   input.addEventListener('keydown', (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.isComposing) {
       event.preventDefault();
+      vscode.postMessage({ type: 'submit', text: clampSearchText(input.value) });
     }
   });
+
+  const results = document.getElementById('results');
+  const status = document.getElementById('status');
+  const loading = document.getElementById('loading');
+
+  if (results && status && loading) {
+    const elements: RenderElements<DomNode> = {
+      results: results as unknown as DomNode,
+      status: status as unknown as DomNode,
+      loading: loading as unknown as DomNode,
+    };
+
+    window.addEventListener('message', (event: MessageEvent) => {
+      if (isStateMessage(event.data)) {
+        renderState(realDom, elements, event.data.state);
+      }
+    });
+
+    results.addEventListener('click', (event: Event) => {
+      const target = event.target as Element | null;
+      const button = target?.closest?.('.result-button');
+      if (!button) {
+        return;
+      }
+      const resultsVersion = parseIndex(button.getAttribute('data-version'));
+      const index = parseIndex(button.getAttribute('data-index'));
+      if (resultsVersion === undefined || index === undefined) {
+        return;
+      }
+      vscode.postMessage({ type: 'open', resultsVersion, index });
+    });
+  }
+
+  // A restored text does not start a search; `ready` only asks for the current state.
+  vscode.postMessage({ type: 'ready' });
 })();

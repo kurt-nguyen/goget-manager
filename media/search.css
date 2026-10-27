@@ -33,3 +33,128 @@ body {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: -1px;
 }
+
+.loading {
+  position: relative;
+  height: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.loading[hidden] {
+  display: none;
+}
+
+.loading-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 100%;
+  background-color: var(--vscode-progressBar-background);
+  animation: loading-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes loading-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(340%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar {
+    width: 100%;
+    animation: none;
+    transform: none;
+  }
+}
+
+.status {
+  margin: 6px 0 4px;
+  color: var(--vscode-descriptionForeground);
+}
+
+.status:empty {
+  display: none;
+}
+
+.results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result {
+  margin: 0;
+  padding: 0;
+}
+
+.result-button {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 6px 8px;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.result-button:hover {
+  background-color: var(--vscode-list-hoverBackground);
+}
+
+.result-button:active {
+  background-color: var(--vscode-list-activeSelectionBackground);
+}
+
+.result-button:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.result-path {
+  display: block;
+  font-size: 1.1em;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.result-name {
+  display: block;
+  color: var(--vscode-descriptionForeground);
+  overflow-wrap: anywhere;
+}
+
+.result-desc {
+  display: block;
+  margin-top: 2px;
+}
+
+.result-synopsis {
+  display: block;
+  color: var(--vscode-foreground);
+  overflow-wrap: anywhere;
+}
+
+.result-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9em;
+}
+
+.result-version,
+.result-published,
+.result-imported {
+  display: inline-block;
+  margin-right: 10px;
+}

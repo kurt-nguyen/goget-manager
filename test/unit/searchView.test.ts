@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+﻿import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildSearchHtml } from '../../src/vscode/searchViewProvider';
@@ -47,16 +47,39 @@ describe('media/search.css (Req 3.4)', () => {
   });
 });
 
-describe('search webview script (Req 3.3, 3.5, 3.6, 3.7)', () => {
-  type Handler = (event: unknown) => void;
+describe('search webview script (Req 1.1, 1.6, 5.1, 7.2, 7.6, 8.7)', () => {
+  type Handler = (event: any) => void;
 
-  interface FakeInput {
-    value: string;
-    handlers: Record<string, Handler>;
-    addEventListener(type: string, handler: Handler): void;
+  class FakeNode {
+    children: FakeNode[] = [];
+    attrs: Record<string, string> = {};
+    handlers: Record<string, Handler> = {};
+    textContent: string | null = '';
+    hidden = false;
+    value = '';
+    constructor(readonly tag = '') {}
+    addEventListener(type: string, handler: Handler): void {
+      this.handlers[type] = handler;
+    }
+    replaceChildren(...children: FakeNode[]): void {
+      this.children = children;
+    }
+    setAttribute(name: string, value: string): void {
+      this.attrs[name] = value;
+    }
+    getAttribute(name: string): string | null {
+      return this.attrs[name] ?? null;
+    }
+    closest(selector: string): FakeNode | null {
+      return selector === '.result-button' && this.attrs.class === 'result-button' ? this : null;
+    }
   }
 
-  let input: FakeInput;
+  let input: FakeNode;
+  let results: FakeNode;
+  let status: FakeNode;
+  let loading: FakeNode;
+  let windowHandlers: Record<string, Handler>;
   let state: { text: string } | undefined;
   let setState: ReturnType<typeof vi.fn>;
   let postMessage: ReturnType<typeof vi.fn>;
@@ -69,26 +92,37 @@ describe('search webview script (Req 3.3, 3.5, 3.6, 3.7)', () => {
 
   beforeEach(() => {
     state = undefined;
-    input = {
-      value: '',
-      handlers: {},
-      addEventListener(type, handler) {
-        this.handlers[type] = handler;
-      },
-    };
+    input = new FakeNode('input');
+    results = new FakeNode('ul');
+    status = new FakeNode('div');
+    loading = new FakeNode('div');
+    windowHandlers = {};
     setState = vi.fn((s: { text: string }) => {
       state = s;
     });
     postMessage = vi.fn();
     g.acquireVsCodeApi = () => ({ getState: () => state, setState, postMessage });
+    const byId: Record<string, FakeNode> = { search: input, results, status, loading };
     g.document = {
-      getElementById: (id: string) => (id === 'search' ? input : null),
+      getElementById: (id: string) => byId[id] ?? null,
+      createElement: (tag: string) => new FakeNode(tag),
+      createTextNode: (text: string) => {
+        const node = new FakeNode('#text');
+        node.textContent = text;
+        return node;
+      },
+    };
+    g.window = {
+      addEventListener: (type: string, handler: Handler) => {
+        windowHandlers[type] = handler;
+      },
     };
   });
 
   afterEach(() => {
     delete g.acquireVsCodeApi;
     delete g.document;
+    delete g.window;
   });
 
   it('restores saved text into the input on load', async () => {
@@ -102,35 +136,93 @@ describe('search webview script (Req 3.3, 3.5, 3.6, 3.7)', () => {
     expect(input.value).toBe('');
   });
 
-  it('saves the typed text on input', async () => {
+  it('posts ready on load, and a restored text does not post a query', async () => {
+    state = { text: 'gin-gonic' };
+    await runScript();
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    expect(postMessage).toHaveBeenCalledWith({ type: 'ready' });
+  });
+
+  it('saves the typed text on input and posts a query', async () => {
     await runScript();
     input.value = 'cobra';
     input.handlers.input!({});
     expect(setState).toHaveBeenLastCalledWith({ text: 'cobra' });
+    expect(postMessage).toHaveBeenLastCalledWith({ type: 'query', text: 'cobra' });
   });
 
-  it('saves text clamped to 256 characters on input', async () => {
+  it('saves and posts text clamped to 256 characters on input', async () => {
     await runScript();
     input.value = 'x'.repeat(300);
     input.handlers.input!({});
     expect(setState).toHaveBeenLastCalledWith({ text: 'x'.repeat(256) });
+    expect(postMessage).toHaveBeenLastCalledWith({ type: 'query', text: 'x'.repeat(256) });
   });
 
-  it('calls preventDefault on Enter only', async () => {
+  it('calls preventDefault on Enter only and posts one submit', async () => {
     await runScript();
-    const enter = { key: 'Enter', preventDefault: vi.fn() };
-    const other = { key: 'a', preventDefault: vi.fn() };
+    postMessage.mockClear();
+    input.value = 'cobra';
+    const enter = { key: 'Enter', isComposing: false, preventDefault: vi.fn() };
+    const other = { key: 'a', isComposing: false, preventDefault: vi.fn() };
     input.handlers.keydown!(enter);
     input.handlers.keydown!(other);
     expect(enter.preventDefault).toHaveBeenCalledTimes(1);
     expect(other.preventDefault).not.toHaveBeenCalled();
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    expect(postMessage).toHaveBeenCalledWith({ type: 'submit', text: 'cobra' });
   });
 
-  it('never calls postMessage', async () => {
+  it('ignores Enter while composing', async () => {
     await runScript();
-    input.value = 'abc';
-    input.handlers.input!({});
-    input.handlers.keydown!({ key: 'Enter', preventDefault: vi.fn() });
+    postMessage.mockClear();
+    const enter = { key: 'Enter', isComposing: true, preventDefault: vi.fn() };
+    input.handlers.keydown!(enter);
+    expect(enter.preventDefault).not.toHaveBeenCalled();
+    expect(postMessage).not.toHaveBeenCalled();
+  });
+
+  it('renders a state message into the results, status, and loading elements', async () => {
+    await runScript();
+    windowHandlers.message!({
+      data: {
+        type: 'state',
+        state: {
+          results: [{ path: 'github.com/spf13/cobra', name: 'cobra' }],
+          status: '1 result',
+          loading: true,
+          resultsVersion: 1,
+        },
+      },
+    });
+    expect(results.children).toHaveLength(1);
+    expect(status.textContent).toBe('1 result');
+    expect(loading.hidden).toBe(false);
+  });
+
+  it('ignores messages that are not state messages', async () => {
+    await runScript();
+    windowHandlers.message!({ data: { type: 'other' } });
+    windowHandlers.message!({ data: null });
+    expect(results.children).toHaveLength(0);
+  });
+
+  it('posts exactly one open message with the version and index of a clicked result', async () => {
+    await runScript();
+    postMessage.mockClear();
+    const button = new FakeNode('button');
+    button.attrs = { class: 'result-button', 'data-version': '3', 'data-index': '7' };
+    const inner = new FakeNode('span');
+    inner.closest = (selector) => (selector === '.result-button' ? button : null);
+    results.handlers.click!({ target: inner });
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    expect(postMessage).toHaveBeenCalledWith({ type: 'open', resultsVersion: 3, index: 7 });
+  });
+
+  it('ignores clicks outside a result button', async () => {
+    await runScript();
+    postMessage.mockClear();
+    results.handlers.click!({ target: new FakeNode('li') });
     expect(postMessage).not.toHaveBeenCalled();
   });
 });
