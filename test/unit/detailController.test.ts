@@ -12,6 +12,7 @@ import {
   UNREACHABLE,
   httpError,
   installNotRecorded,
+  uninstallNotRemoved,
 } from '../../src/core/messages';
 import { FakeSearchClient, RecordingOutput, FIXED_TIMESTAMP, fixedClock, flushPromises } from './searchArbitraries';
 import { FakeTimers } from './fakeTimers';
@@ -388,6 +389,19 @@ describe('DetailController install/uninstall', () => {
     h.controller.requestInstall();
     await settleAction(h, 0, { ok: true });
     expect(h.controller.state).toMatchObject({ installed: false, actionError: installNotRecorded(SFTP_PATH) });
+  });
+
+  it('uninstall that leaves the package required reports it', async () => {
+    const h = setup();
+    h.installed.add(SFTP_PATH);
+    await loadSftp(h);
+    h.controller.requestUninstall();
+    h.messages.length = 0;
+    await settleAction(h, 0, { ok: true });
+    const error = uninstallNotRemoved(SFTP_PATH);
+    expect(h.messages).toEqual([{ type: 'action', installed: true, error }]);
+    expect(h.controller.state).toMatchObject({ installed: true, actionError: error });
+    expect(h.controller.state.busy).toBeUndefined();
   });
 
   it('a cancelled install shows nothing', async () => {

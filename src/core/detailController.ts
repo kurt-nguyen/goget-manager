@@ -11,6 +11,7 @@ import {
   goFailed,
   httpError,
   installNotRecorded,
+  uninstallNotRemoved,
 } from './messages';
 import type { ActionResult } from './packageActions';
 import { parsePackageDetail } from './packageDetail';
@@ -229,6 +230,8 @@ export class DetailController implements DisposableLike {
     let error = result.ok || result.cancelled === true ? undefined : result.error;
     if (result.ok && kind === 'install' && !installed) {
       error = installNotRecorded(path);
+    } else if (result.ok && kind === 'uninstall' && installed) {
+      error = uninstallNotRemoved(path);
     }
     const { busy: _busy, actionError: _actionError, ...rest } = this.current;
     this.current = error === undefined ? { ...rest, installed } : { ...rest, installed, actionError: error };

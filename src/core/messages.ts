@@ -126,6 +126,10 @@ export function installNotRecorded(path: string): string {
   return `go get finished but go.mod does not list ${path}.`;
 }
 
+export function uninstallNotRemoved(path: string): string {
+  return `The uninstall finished but ${path} is still required by a go.mod in the workspace.`;
+}
+
 export const PICK_FOLDER_INSTALL = 'Choose the go.mod to install into';
 
 export function pickFolderUninstall(path: string): string {
