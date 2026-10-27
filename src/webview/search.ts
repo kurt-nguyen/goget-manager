@@ -100,11 +100,26 @@ function parseIndex(value: string | null): number | undefined {
 
     let lastState: SearchViewModel | undefined;
     let installed: ReadonlySet<string> = new Set();
+    let selectedPath: string | undefined;
+
+    // Every render rebuilds the result buttons, so the highlight is re-applied afterwards.
+    const applySelection = (): void => {
+      for (const button of Array.from(results.querySelectorAll('.result-button'))) {
+        const selected = selectedPath !== undefined && button.getAttribute('data-path') === selectedPath;
+        button.classList.toggle('selected', selected);
+        if (selected) {
+          button.setAttribute('aria-current', 'true');
+        } else {
+          button.removeAttribute('aria-current');
+        }
+      }
+    };
 
     window.addEventListener('message', (event: MessageEvent) => {
       if (isStateMessage(event.data)) {
         lastState = event.data.state;
         renderState(realDom, elements, lastState, installed);
+        applySelection();
       } else if (isInstalledMessage(event.data)) {
         installed = new Set(event.data.modules);
         if (lastState === undefined) {
@@ -114,6 +129,7 @@ function parseIndex(value: string | null): number | undefined {
         const active = document.activeElement as Element | null | undefined;
         const focusedIndex = parseIndex(active?.closest?.('.result-button')?.getAttribute('data-index') ?? null);
         renderState(realDom, elements, lastState, installed);
+        applySelection();
         if (focusedIndex !== undefined) {
           const button = results.querySelector?.(`.result-button[data-index="${focusedIndex}"]`);
           (button as HTMLElement | null | undefined)?.focus?.();
@@ -131,6 +147,8 @@ function parseIndex(value: string | null): number | undefined {
       if (path === null || path === '') {
         return;
       }
+      selectedPath = path;
+      applySelection();
       vscode.postMessage({ type: 'select', path });
     });
   }

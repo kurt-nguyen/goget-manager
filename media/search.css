@@ -116,6 +116,12 @@ body {
   background-color: var(--vscode-list-activeSelectionBackground);
 }
 
+.result-button.selected,
+.result-button.selected:hover {
+  color: var(--vscode-list-inactiveSelectionForeground, var(--vscode-foreground));
+  background-color: var(--vscode-list-inactiveSelectionBackground);
+}
+
 .result-button:focus-visible {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: -1px;

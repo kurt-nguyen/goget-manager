@@ -88,6 +88,32 @@ describe('search webview script (Req 1.1, 1.6, 5.1, 7.2, 7.6, 8.7)', () => {
     closest(selector: string): FakeNode | null {
       return selector === '.result-button' && this.attrs.class === 'result-button' ? this : null;
     }
+    removeAttribute(name: string): void {
+      delete this.attrs[name];
+    }
+    readonly classes = new Set<string>();
+    readonly classList = {
+      toggle: (name: string, force: boolean): void => {
+        if (force) {
+          this.classes.add(name);
+        } else {
+          this.classes.delete(name);
+        }
+      },
+    };
+    querySelectorAll(selector: string): FakeNode[] {
+      const found: FakeNode[] = [];
+      const visit = (node: FakeNode): void => {
+        for (const child of node.children) {
+          if (selector === '.result-button' && child.attrs.class === 'result-button') {
+            found.push(child);
+          }
+          visit(child);
+        }
+      };
+      visit(this);
+      return found;
+    }
   }
 
   let input: FakeNode;
@@ -272,6 +298,22 @@ describe('search webview script (Req 1.1, 1.6, 5.1, 7.2, 7.6, 8.7)', () => {
     results.handlers.click!({ target: inner });
     expect(postMessage).toHaveBeenCalledTimes(1);
     expect(postMessage).toHaveBeenCalledWith({ type: 'select', path: 'github.com/spf13/viper' });
+  });
+
+  it('highlights the clicked result and keeps the highlight across re-renders', async () => {
+    await runScript();
+    windowHandlers.message!({ data: cobraState });
+    const buttonOf = (): FakeNode => results.querySelectorAll('.result-button')[0]!;
+    expect(buttonOf().classes.has('selected')).toBe(false);
+
+    results.handlers.click!({ target: buttonOf() });
+    expect(buttonOf().classes.has('selected')).toBe(true);
+    expect(buttonOf().attrs['aria-current']).toBe('true');
+
+    windowHandlers.message!({ data: { type: 'installed', modules: ['github.com/spf13/cobra'] } });
+    windowHandlers.message!({ data: cobraState });
+    expect(buttonOf().classes.has('selected')).toBe(true);
+    expect(buttonOf().attrs['aria-current']).toBe('true');
   });
 
   it('posts nothing when a clicked result button has no data-path', async () => {
