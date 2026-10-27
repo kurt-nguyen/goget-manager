@@ -129,7 +129,7 @@ describe('DetailPanelManager', () => {
     manager.show(SFTP_PATH);
     const panel = panels[0]!;
     expect(panel.posted.map((m) => m.state?.status)).toEqual(['loading']);
-    expect(panel.title).toBe(SFTP_PATH);
+    expect(panel.title).toBe('GoGet: sftp');
 
     panel.send({ type: 'ready' });
     expect(panel.posted).toHaveLength(2);
@@ -138,6 +138,13 @@ describe('DetailPanelManager', () => {
     client.calls[0]!.settle({ kind: 'ok', html: SFTP });
     await flushPromises();
     expect(panel.posted[panel.posted.length - 1]).toMatchObject({ type: 'state', state: { status: 'ready' } });
+    expect(panel.title).toBe('GoGet: sftp');
+  });
+
+  it('titles the tab with the package name, not the import path', () => {
+    const { manager, panels } = setup();
+    manager.show(OTHER_PATH);
+    expect(panels[0]!.title).toBe('GoGet: cobra');
   });
 
   it('routes changeGoos, retry, install and uninstall to the controller', async () => {

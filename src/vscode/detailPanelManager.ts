@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
 import type { DetailController } from '../core/detailController';
 import { buildDetailHtml } from '../core/detailHtml';
-import { parseDetailMessage, type HostToDetail } from '../core/detailProtocol';
+import { parseDetailMessage, type DetailViewModel, type HostToDetail } from '../core/detailProtocol';
 import type { DetailOpener } from './searchViewProvider';
 
 /** The slice of `vscode.WebviewPanel` the manager uses. */
@@ -25,7 +25,19 @@ export interface PanelLike {
 export type PanelFactory = (mediaRoot: vscode.Uri) => PanelLike;
 
 const VIEW_TYPE = 'gogetManager.detail';
-const PANEL_TITLE = 'Package details';
+const PANEL_TITLE = 'GoGet';
+
+function packageName(path: string): string {
+  const segments = path.split('/').filter((segment) => segment !== '');
+  const last = segments[segments.length - 1] ?? path;
+  const previous = segments[segments.length - 2];
+  return /^v\d+$/.test(last) && previous !== undefined ? previous : last;
+}
+
+function panelTitle(state: DetailViewModel): string {
+  const name = state.detail?.importPath === state.path ? state.detail.title : packageName(state.path);
+  return `GoGet: ${name}`;
+}
 
 const defaultCreatePanel: PanelFactory = (mediaRoot) =>
   vscode.window.createWebviewPanel(VIEW_TYPE, PANEL_TITLE, vscode.ViewColumn.Active, {
@@ -124,7 +136,7 @@ export class DetailPanelManager implements vscode.Disposable, DetailOpener {
       this.controller.onDidChange((message) => {
         post(message);
         if (message.type === 'state' && message.state.path !== '') {
-          panel.title = message.state.path;
+          panel.title = panelTitle(message.state);
         }
       }),
       panel.onDidDispose(() => {
