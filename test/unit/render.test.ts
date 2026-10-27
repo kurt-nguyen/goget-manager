@@ -124,6 +124,7 @@ describe('renderState (Req 1.1, 4.6, 5.1, 7.4)', () => {
       'aria-label': 'github.com/spf13/viper',
       'data-version': '4',
       'data-index': '1',
+      'data-path': 'github.com/spf13/viper',
     });
   });
 

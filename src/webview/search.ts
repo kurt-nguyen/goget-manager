@@ -62,7 +62,7 @@ function parseIndex(value: string | null): number | undefined {
 }
 
 // Search_Box script. It persists the text through the webview state API, tells
-// the host about typing (`query`), Enter (`submit`), and result clicks (`open`),
+// the host about typing (`query`), Enter (`submit`), and result clicks (`select`),
 // and renders the host's view state. It never builds markup from strings.
 (function main(): void {
   const vscode = acquireVsCodeApi();
@@ -127,12 +127,11 @@ function parseIndex(value: string | null): number | undefined {
       if (!button) {
         return;
       }
-      const resultsVersion = parseIndex(button.getAttribute('data-version'));
-      const index = parseIndex(button.getAttribute('data-index'));
-      if (resultsVersion === undefined || index === undefined) {
+      const path = button.getAttribute('data-path');
+      if (path === null || path === '') {
         return;
       }
-      vscode.postMessage({ type: 'open', resultsVersion, index });
+      vscode.postMessage({ type: 'select', path });
     });
   }
 

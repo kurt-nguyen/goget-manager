@@ -162,6 +162,21 @@ describe('parseWebviewMessage', () => {
     });
   });
 
+  it('accepts select with a valid import path and drops extra keys', () => {
+    expect(parseWebviewMessage({ type: 'select', path: 'github.com/pkg/sftp/v2' })).toEqual({
+      type: 'select',
+      path: 'github.com/pkg/sftp/v2',
+    });
+    expect(parseWebviewMessage({ type: 'select', path: 'os', index: 1 })).toEqual({ type: 'select', path: 'os' });
+  });
+
+  it('rejects select with a missing, non-string or invalid path', () => {
+    for (const path of [undefined, null, 5, '', '..', 'a//b', 'a b', 'a?x', 'a#x', 'a'.repeat(513)]) {
+      expect(parseWebviewMessage({ type: 'select', path })).toBeUndefined();
+    }
+    expect(parseWebviewMessage({ type: 'select' })).toBeUndefined();
+  });
+
   it('rejects unknown types', () => {
     expect(parseWebviewMessage({ type: 'nope' })).toBeUndefined();
     expect(parseWebviewMessage({ type: 'state', state: {} })).toBeUndefined();

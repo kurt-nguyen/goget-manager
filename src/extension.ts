@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
 import { GoModRepository, createDefaultDeps } from './vscode/goModRepository';
 import { InstalledTreeProvider } from './vscode/installedTreeProvider';
-import { collectInstalledModulePaths } from './core/installedMatch';
+import { DetailController } from './core/detailController';
+import { collectInstalledModulePaths, isInstalledPackage } from './core/installedMatch';
 import { SearchController } from './core/searchController';
+import { DetailPanelManager } from './vscode/detailPanelManager';
 import { PkgGoDevSearchClient, nodeHttpsTransport } from './vscode/searchClient';
 import { SearchViewProvider } from './vscode/searchViewProvider';
 import { createTestApi } from './vscode/testApi';
@@ -26,10 +28,24 @@ export function activate(context: vscode.ExtensionContext): GogetManagerApi {
       void vscode.window.showErrorMessage(message);
     },
   });
-  const searchProvider = new SearchViewProvider(context.extensionUri, searchController, {
-    onDidChange: repository.onDidChange,
-    modules: () => collectInstalledModulePaths(repository.snapshot()),
+  const detailController = new DetailController({
+    client: new PkgGoDevSearchClient(nodeHttpsTransport),
+    output,
+    isInstalled: (path) => isInstalledPackage(path, new Set(collectInstalledModulePaths(repository.snapshot()))),
   });
+  const detailManager = new DetailPanelManager(context.extensionUri, detailController, (url) =>
+    vscode.env.openExternal(vscode.Uri.parse(url, true)),
+  );
+  const installedRefresh = repository.onDidChange(() => detailController.refreshInstalled());
+  const searchProvider = new SearchViewProvider(
+    context.extensionUri,
+    searchController,
+    {
+      onDidChange: repository.onDidChange,
+      modules: () => collectInstalledModulePaths(repository.snapshot()),
+    },
+    detailManager,
+  );
   const searchRegistration = vscode.window.registerWebviewViewProvider(SearchViewProvider.viewId, searchProvider, {
     webviewOptions: { retainContextWhenHidden: true },
   });
@@ -42,6 +58,9 @@ export function activate(context: vscode.ExtensionContext): GogetManagerApi {
     treeProvider,
     treeView,
     searchController,
+    detailController,
+    detailManager,
+    installedRefresh,
     searchProvider,
     searchRegistration,
     refreshCommand,

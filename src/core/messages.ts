@@ -62,6 +62,48 @@ export function searchFailureLog(ts: string, query: string, failure: SearchFailu
   }
 }
 
+export const DETAIL_TIMED_OUT = 'Loading the package page timed out. Try again.';
+
+export const DETAIL_BAD_PAGE = 'pkg.go.dev returned a page this extension could not read.';
+
+export const DETAIL_NOT_FOUND = 'This package was not found on pkg.go.dev.';
+
+export const DETAIL_INVALID_PATH = 'This package path is not valid.';
+
+/** Status text shown while a package page is loading. */
+export function detailLoading(path: string): string {
+  return `Loading ${path}\u2026`;
+}
+
+/** Output_Channel line for a package page that failed to load. `ts` is an ISO 8601 string. */
+export function detailFailureLog(
+  ts: string,
+  path: string,
+  goos: string | undefined,
+  failure: SearchFailure | { readonly kind: 'badPage' },
+): string {
+  const target = goos === undefined ? JSON.stringify(path) : `${JSON.stringify(path)} (GOOS=${singleLine(goos)})`;
+  const prefix = `[${ts}] Loading package page ${target} failed: `;
+  switch (failure.kind) {
+    case 'unreachable':
+      return `${prefix}unreachable (${singleLine(failure.reason)})`;
+    case 'http':
+      return `${prefix}HTTP error ${failure.status}`;
+    case 'redirectBlocked':
+      return `${prefix}HTTP error ${failure.status}, redirect to host ${singleLine(failure.targetHost)} blocked`;
+    case 'timeout':
+      return `${prefix}timeout`;
+    case 'badPage':
+      return `${prefix}unrecognised page`;
+  }
+}
+
+/** Output_Channel line for the Install/Uninstall stub. */
+export function installStubLog(ts: string, action: 'install' | 'uninstall', path: string): string {
+  const label = action === 'install' ? 'Install' : 'Uninstall';
+  return `[${ts}] ${label} requested for ${singleLine(path)}: not implemented yet.`;
+}
+
 /** Output_Channel line for a package page that was refused before opening. */
 export function openRefusedLog(ts: string, path: string, reason: 'emptyPath' | 'notPkgGoDev'): string {
   const text = reason === 'emptyPath' ? 'empty package path' : 'not an HTTPS pkg.go.dev URL';

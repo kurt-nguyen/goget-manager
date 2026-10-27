@@ -1,3 +1,4 @@
+import { isValidImportPath } from './detailUrl';
 import type { PackageResult } from './resultsParser';
 import { clampSearchText } from './searchText';
 
@@ -14,7 +15,8 @@ export type WebviewToHost =
   | { readonly type: 'ready' }
   | { readonly type: 'query'; readonly text: string }
   | { readonly type: 'submit'; readonly text: string }
-  | { readonly type: 'open'; readonly resultsVersion: number; readonly index: number };
+  | { readonly type: 'open'; readonly resultsVersion: number; readonly index: number }
+  | { readonly type: 'select'; readonly path: string };
 
 export type HostToWebview =
   | { readonly type: 'state'; readonly state: SearchViewModel }
@@ -63,6 +65,13 @@ export function parseWebviewMessage(value: unknown): WebviewToHost | undefined {
           return undefined;
         }
         return { type: 'open', resultsVersion, index };
+      }
+      case 'select': {
+        const path = record.path;
+        if (typeof path !== 'string' || !isValidImportPath(path)) {
+          return undefined;
+        }
+        return { type: 'select', path };
       }
       default:
         return undefined;

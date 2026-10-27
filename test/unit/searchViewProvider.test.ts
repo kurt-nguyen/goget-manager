@@ -255,6 +255,30 @@ describe('SearchViewProvider', () => {
       expect(h.opened).toEqual(['https://pkg.go.dev/gopkg.in/mgo.v2']);
     });
 
+    it('forwards a valid select to the DetailOpener and ignores an invalid one', () => {
+      const h = createControllerHarness();
+      const shown: string[] = [];
+      const provider = new SearchViewProvider(Uri.file('/ext') as never, h.controller, undefined, {
+        show: (path) => {
+          shown.push(path);
+        },
+      });
+      const view = new FakeWebviewView();
+      provider.resolveWebviewView(view.asView);
+      view.send({ type: 'select', path: 'gopkg.in/mgo.v2' });
+      view.send({ type: 'select', path: '../etc' });
+      view.send({ type: 'select' });
+      expect(shown).toEqual(['gopkg.in/mgo.v2']);
+      expect(h.opened).toEqual([]);
+    });
+
+    it('ignores select when no DetailOpener was given', () => {
+      const { h, view } = setup();
+      view.send({ type: 'select', path: 'gopkg.in/mgo.v2' });
+      expect(view.posted).toEqual([]);
+      expect(h.opened).toEqual([]);
+    });
+
     it('ignores open with a stale resultsVersion', async () => {
       const { h, view } = setup();
       view.send({ type: 'submit', text: 'mongodb' });

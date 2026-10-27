@@ -123,6 +123,7 @@ function buildResult<N extends NodeLike>(
   dom.setAttribute(button, 'aria-describedby', descId);
   dom.setAttribute(button, 'data-version', String(version));
   dom.setAttribute(button, 'data-index', String(index));
+  dom.setAttribute(button, 'data-path', entry.path);
   dom.replaceChildren(button, [
     textSpan(dom, 'result-path', entry.path),
     textSpan(dom, 'result-name', entry.name),

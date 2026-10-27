@@ -262,7 +262,19 @@ describe('search webview script (Req 1.1, 1.6, 5.1, 7.2, 7.6, 8.7)', () => {
     expect(results.children).toHaveLength(0);
   });
 
-  it('posts exactly one open message with the version and index of a clicked result', async () => {
+  it('posts exactly one select message with the import path of a clicked result', async () => {
+    await runScript();
+    postMessage.mockClear();
+    const button = new FakeNode('button');
+    button.attrs = { class: 'result-button', 'data-version': '3', 'data-index': '7', 'data-path': 'github.com/spf13/viper' };
+    const inner = new FakeNode('span');
+    inner.closest = (selector) => (selector === '.result-button' ? button : null);
+    results.handlers.click!({ target: inner });
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    expect(postMessage).toHaveBeenCalledWith({ type: 'select', path: 'github.com/spf13/viper' });
+  });
+
+  it('posts nothing when a clicked result button has no data-path', async () => {
     await runScript();
     postMessage.mockClear();
     const button = new FakeNode('button');
@@ -270,8 +282,7 @@ describe('search webview script (Req 1.1, 1.6, 5.1, 7.2, 7.6, 8.7)', () => {
     const inner = new FakeNode('span');
     inner.closest = (selector) => (selector === '.result-button' ? button : null);
     results.handlers.click!({ target: inner });
-    expect(postMessage).toHaveBeenCalledTimes(1);
-    expect(postMessage).toHaveBeenCalledWith({ type: 'open', resultsVersion: 3, index: 7 });
+    expect(postMessage).not.toHaveBeenCalled();
   });
 
   it('ignores clicks outside a result button', async () => {

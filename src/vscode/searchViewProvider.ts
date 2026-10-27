@@ -54,6 +54,11 @@ export interface InstalledModulesSource {
   modules(): readonly string[];
 }
 
+/** Opens (or re-uses) the package detail tab for an import path. */
+export interface DetailOpener {
+  show(path: string): void;
+}
+
 export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   static readonly viewId = 'gogetManager.search';
 
@@ -64,6 +69,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Di
     private readonly extensionUri: vscode.Uri,
     private readonly controller: SearchController,
     private readonly installed?: InstalledModulesSource,
+    private readonly detail?: DetailOpener,
   ) {}
 
   /** True once VS Code has asked this provider to resolve the view (read by the test API). */
@@ -125,6 +131,9 @@ export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Di
             break;
           case 'open':
             void this.controller.open(message.resultsVersion, message.index);
+            break;
+          case 'select':
+            this.detail?.show(message.path);
             break;
         }
       }),
