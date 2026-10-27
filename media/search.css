@@ -196,7 +196,7 @@ body {
   padding: 0 6px;
   font-size: 0.85em;
   line-height: 1.5;
-  border: 1px solid var(--vscode-contrastBorder);
+  border: 1px solid var(--vscode-contrastBorder, transparent);
   border-radius: 10px;
 }
 
