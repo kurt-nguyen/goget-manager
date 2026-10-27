@@ -1,0 +1,7 @@
+{
+  "task_id": "task-detail-tab",
+  "task_description": "Clicking a Search result in the goget-manager VS Code extension opens ONE reusable detail WebviewPanel in the editor area, populated by scraping pkg.go.dev in the extension host: header section (package properties + Install/Uninstall stub button driven by installed detection) and main section (README + Documentation, with a GOOS dropdown that re-fetches ?GOOS=<os> when the page offers it). Design reference: .agents/tasks/detail-tab-plan.md",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
