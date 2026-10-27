@@ -128,6 +128,8 @@ describe('buildSearchHtml structure (Req 7.2, 7.4, 8.7)', () => {
     expect(csp).not.toContain('connect-src');
     expect(csp).toContain("default-src 'none'");
     expect(csp).toContain(`script-src 'nonce-${nonce}'`);
+    expect(csp).toContain('img-src data:');
+    expect(csp).not.toContain("'unsafe-inline'");
   });
 
   it('still has exactly one input', () => {

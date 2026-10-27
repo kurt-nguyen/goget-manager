@@ -13,7 +13,7 @@ export function buildSearchHtml(
   cssUri: string,
   jsUri: string,
 ): string {
-  const csp = `default-src 'none'; style-src ${cspSource}; script-src 'nonce-${nonce}'`;
+  const csp = `default-src 'none'; style-src ${cspSource}; script-src 'nonce-${nonce}'; img-src data:`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>

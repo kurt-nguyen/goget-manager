@@ -172,6 +172,29 @@ function expectSpan(node: FakeNode, className: string, text: string): void {
   expect(node.children.every((c) => c.kind === 'text')).toBe(true);
 }
 
+function expectIconSpan(
+  node: FakeNode,
+  className: string,
+  iconClass: string,
+  tooltip: string,
+  value: string,
+): void {
+  expect(node.kind).toBe('element');
+  expect(node.tag).toBe('span');
+  expect(classOf(node)).toBe(className);
+  expect(node.children).toHaveLength(2);
+  const [icon, text] = node.children as [FakeNode, FakeNode];
+  expect(icon.kind).toBe('element');
+  expect(icon.tag).toBe('span');
+  expect(classOf(icon)).toBe(`result-icon ${iconClass}`);
+  expect(icon.attrs.get('title')).toBe(tooltip);
+  expect(icon.attrs.get('role')).toBe('img');
+  expect(icon.attrs.get('aria-label')).toBe(tooltip);
+  expect(icon.children).toHaveLength(0);
+  expect(text.kind).toBe('text');
+  expect(text.textContent).toBe(value);
+}
+
 function state(results: readonly PackageResult[], resultsVersion: number, status = '', loading = false): SearchViewModel {
   return { results, status, loading, resultsVersion };
 }
@@ -210,15 +233,23 @@ function expectRendered(list: FakeNode, results: readonly PackageResult[], versi
     if (result.synopsis !== undefined) {
       expectedChildren.push({ cls: 'result-synopsis', text: expectedSynopsis(result.synopsis) });
     }
-    const meta: Array<{ cls: string; text: string }> = [];
+    const meta: Array<{ cls: string; text: string; icon?: { cls: string; tooltip: string } }> = [];
     if (result.version !== undefined) {
       meta.push({ cls: 'result-version', text: result.version });
     }
     if (result.published !== undefined) {
-      meta.push({ cls: 'result-published', text: `published ${result.published}` });
+      meta.push({
+        cls: 'result-published',
+        text: result.published,
+        icon: { cls: 'icon-calendar', tooltip: 'Publish date' },
+      });
     }
     if (result.importedBy !== undefined) {
-      meta.push({ cls: 'result-imported', text: `Imported by ${result.importedBy}` });
+      meta.push({
+        cls: 'result-imported',
+        text: result.importedBy,
+        icon: { cls: 'icon-download', tooltip: 'Number of import' },
+      });
     }
 
     const descChildren = [...desc.children];
@@ -234,7 +265,12 @@ function expectRendered(list: FakeNode, results: readonly PackageResult[], versi
       expect(classOf(metaSpan as FakeNode)).toBe('result-meta');
       expect((metaSpan as FakeNode).children).toHaveLength(meta.length);
       meta.forEach((expected, i) => {
-        expectSpan((metaSpan as FakeNode).children[i]!, expected.cls, expected.text);
+        const child = (metaSpan as FakeNode).children[i]!;
+        if (expected.icon !== undefined) {
+          expectIconSpan(child, expected.cls, expected.icon.cls, expected.icon.tooltip, expected.text);
+        } else {
+          expectSpan(child, expected.cls, expected.text);
+        }
       });
     }
     // Absent fields produce nothing: no further children remain.

@@ -169,7 +169,7 @@ Tests use the existing tooling unchanged: Vitest (`npm test`) with fast-check `4
 - [x] 8. Implement the webview renderer, script, and styles
   - [x] 8.1 Implement `src/webview/render.ts`
     - Define the small `DomLike` interface (`createElement`, `createTextNode`, `replaceChildren`, `setAttribute`, `textContent`, `hidden`) and `renderState(dom, elements, state)`
-    - Rebuild the Result_List only when `resultsVersion` changes: one `<li class="result">` with a `<button type="button" class="result-button">` per result, `aria-label` = path, `aria-describedby`, `data-version`, `data-index`, then the path span first, the name span, and the description span with synopsis (`toResultEntry`), version, `published <published>`, and `Imported by <importedBy>` spans; every value is its own text node; no span for absent fields; never use `innerHTML`
+    - Rebuild the Result_List only when `resultsVersion` changes: one `<li class="result">` with a `<button type="button" class="result-button">` per result, `aria-label` = path, `aria-describedby`, `data-version`, `data-index`, then the path span first, the name span, and the description span with synopsis (`toResultEntry`), version, a `published` span (calendar icon span with title 'Publish date', then the value), and an `importedBy` span (download icon span with title 'Number of import', then the value); every value is its own text node; no span for absent fields; never use `innerHTML`
     - Assign the status `textContent` only when the text differs; set the loading element's `hidden = !state.loading`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.8, 5.2, 5.3, 7.4_
 

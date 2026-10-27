@@ -14,11 +14,16 @@ describe('package.json manifest', () => {
       const [container] = containers;
       expect(container.id).toBe('goget-manager');
       expect(container.title).toBe('Goget Manager');
-      expect(container.icon).toBe('imgs/goget-manager-icon.png');
+      expect(container.icon).toBe('imgs/goget-manager-activitybar.png');
       expect(container).not.toHaveProperty('when');
     });
 
     it('icon file exists on disk', () => {
+      expect(existsSync(resolve(root, 'imgs', 'goget-manager-activitybar.png'))).toBe(true);
+    });
+
+    it('keeps the extension-level icon', () => {
+      expect(pkg.icon).toBe('imgs/goget-manager-icon.png');
       expect(existsSync(resolve(root, 'imgs', 'goget-manager-icon.png'))).toBe(true);
     });
   });

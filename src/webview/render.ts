@@ -40,6 +40,28 @@ function textSpan<N extends NodeLike>(dom: DomLike<N>, className: string, ...tex
   return span;
 }
 
+function iconSpan<N extends NodeLike>(dom: DomLike<N>, iconClass: string, tooltip: string): N {
+  const icon = dom.createElement('span');
+  dom.setAttribute(icon, 'class', `result-icon ${iconClass}`);
+  dom.setAttribute(icon, 'title', tooltip);
+  dom.setAttribute(icon, 'role', 'img');
+  dom.setAttribute(icon, 'aria-label', tooltip);
+  return icon;
+}
+
+function iconValueSpan<N extends NodeLike>(
+  dom: DomLike<N>,
+  className: string,
+  iconClass: string,
+  tooltip: string,
+  value: string,
+): N {
+  const span = dom.createElement('span');
+  dom.setAttribute(span, 'class', className);
+  dom.replaceChildren(span, [iconSpan(dom, iconClass, tooltip), dom.createTextNode(value)]);
+  return span;
+}
+
 function buildDescription<N extends NodeLike>(dom: DomLike<N>, entry: ResultEntry, id: string): N {
   const desc = dom.createElement('span');
   dom.setAttribute(desc, 'id', id);
@@ -55,10 +77,10 @@ function buildDescription<N extends NodeLike>(dom: DomLike<N>, entry: ResultEntr
     meta.push(textSpan(dom, 'result-version', entry.version));
   }
   if (entry.published !== undefined) {
-    meta.push(textSpan(dom, 'result-published', 'published ', entry.published));
+    meta.push(iconValueSpan(dom, 'result-published', 'icon-calendar', 'Publish date', entry.published));
   }
   if (entry.importedBy !== undefined) {
-    meta.push(textSpan(dom, 'result-imported', 'Imported by ', entry.importedBy));
+    meta.push(iconValueSpan(dom, 'result-imported', 'icon-download', 'Number of import', entry.importedBy));
   }
   if (meta.length > 0) {
     const metaSpan = dom.createElement('span');

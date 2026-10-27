@@ -127,6 +127,65 @@ describe('renderState (Req 1.1, 4.6, 5.1, 7.4)', () => {
     });
   });
 
+  it('renders published and imported meta as icon spans with tooltips followed by the value', () => {
+    const { dom, elements } = createDom();
+    renderState(
+      dom,
+      elements,
+      model({
+        results: [
+          { path: 'a/b', name: 'b', version: 'v1.0.0', published: 'Oct 6, 2026', importedBy: '1,289' },
+        ],
+      }),
+    );
+    const desc = elements.results.children[0]!.children[0]!.children[2]!;
+    const meta = desc.children[0]!;
+    expect(meta.attrs.class).toBe('result-meta');
+    expect(meta.children.map((c) => c.attrs.class)).toEqual([
+      'result-version',
+      'result-published',
+      'result-imported',
+    ]);
+
+    const [, published, imported] = meta.children as [FakeNode, FakeNode, FakeNode];
+    expect(published.children).toHaveLength(2);
+    expect(published.children[0]!.attrs).toEqual({
+      class: 'result-icon icon-calendar',
+      title: 'Publish date',
+      role: 'img',
+      'aria-label': 'Publish date',
+    });
+    expect(published.children[1]!.tag).toBe('#text');
+    expect(published.children[1]!.text).toBe('Oct 6, 2026');
+    expect(imported.children).toHaveLength(2);
+    expect(imported.children[0]!.attrs).toEqual({
+      class: 'result-icon icon-download',
+      title: 'Number of import',
+      role: 'img',
+      'aria-label': 'Number of import',
+    });
+    expect(imported.children[1]!.tag).toBe('#text');
+    expect(imported.children[1]!.text).toBe('1,289');
+
+    const texts: string[] = [];
+    const collect = (node: FakeNode): void => {
+      if (node.tag === '#text') {
+        texts.push(node.text ?? '');
+      }
+      node.children.forEach(collect);
+    };
+    collect(meta);
+    expect(texts).not.toContain('published ');
+    expect(texts).not.toContain('Imported by ');
+  });
+
+  it('omits meta spans for absent fields', () => {
+    const { dom, elements } = createDom();
+    renderState(dom, elements, model({ results: [{ path: 'a/b', name: 'b', published: 'Oct 6, 2026' }] }));
+    const meta = elements.results.children[0]!.children[0]!.children[2]!.children[0]!;
+    expect(meta.children.map((c) => c.attrs.class)).toEqual(['result-published']);
+  });
+
   it('clears the list when the results are empty', () => {
     const { dom, elements } = createDom();
     renderState(dom, elements, model());

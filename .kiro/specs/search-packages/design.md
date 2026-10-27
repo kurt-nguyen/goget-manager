@@ -16,7 +16,7 @@ The webview (`src/webview/search.ts` → `media/search.js`) stays thin: it posts
 | Decision | Rationale |
 |---|---|
 | Debounce, cancellation, timeout, and state live in the extension host (`SearchController`), not the webview | Requirement 7.5 needs searches to finish and keep their outcome while the view is hidden or re-resolved. The host outlives the webview, and the existing `KeyedDebouncer` and `TimerApi` let the logic be tested with fake timers. The webview only renders the host's state. |
-| The host makes the HTTP request; the webview CSP stays `default-src 'none'` with no `connect-src` | Assumption 6 and Requirement 8. The webview cannot reach the network at all. |
+| The host makes the HTTP request; the webview CSP stays `default-src 'none'` with no `connect-src` (only `img-src data:` is added for the CSS mask icons) | Assumption 6 and Requirement 8. The webview cannot reach the network at all. |
 | `node:https` instead of global `fetch` | The extension targets VS Code `^1.85.0`. VS Code applies the user's `http.proxy` settings to extensions through the Node `http`/`https` modules ([Network connections in VS Code](https://code.visualstudio.com/docs/setup/network)); proxy support for `fetch` in the extension host arrived only in later releases. `https` also gives direct control over redirects (never followed automatically) and body size. |
 | Redirects are followed manually, at most 5 hops, only to `https://pkg.go.dev` | Requirements 8.2 and 8.3. Every hop is checked by the same pure `isPkgGoDevHttpsUrl` predicate used for opening package pages. |
 | Hand-written, linear HTML tokenizer and stack-based extractor, no dependency | The extension has no runtime dependencies, and the existing spec uses a hand-written parser for the same reasons (pure, fast, exact behavior). Only a handful of elements and attributes are needed. A single `indexOf`-driven pass handles 5 MB well within 1 s (Requirement 3.1) and never throws on malformed input (Requirement 3.8). |
@@ -497,15 +497,15 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
         <span class="result-synopsis"><synopsis></span>
         <span class="result-meta">
           <span class="result-version"><version></span>
-          <span class="result-published">published <published></span>
-          <span class="result-imported">Imported by <importedBy></span>
+          <span class="result-published"><span class="result-icon icon-calendar" title="Publish date" role="img" aria-label="Publish date"></span><published></span>
+          <span class="result-imported"><span class="result-icon icon-download" title="Number of import" role="img" aria-label="Number of import"></span><importedBy></span>
         </span>
       </span>
     </button>
   </li>
   ```
 
-  Each `<…>` value is a separate text node created with `createTextNode` (Requirement 4.4). Spans for absent fields are not created (Requirement 4.8). The path comes first and uses the larger, bold style (Requirement 4.2).
+  Each `<…>` value is a separate text node created with `createTextNode` (Requirement 4.4). Spans for absent fields are not created (Requirement 4.8). The path comes first and uses the larger, bold style (Requirement 4.2). The icons are empty spans drawn with CSS `mask-image` and `currentColor`; the tooltip is the `title`, and `role="img"` + `aria-label` keep the meaning for screen readers.
 - **Status_Message**: `textContent` is assigned only when the text differs from the current text, so the polite live region announces each change once (Requirement 7.4).
 - **Loading_Indicator**: `hidden = !state.loading`. It is an indeterminate bar animated with CSS and `aria-hidden`, since the live region already announces "Searching…".
 
@@ -516,6 +516,7 @@ New rules use only theme variables, so a theme switch restyles without reload (R
 - Results: `--vscode-foreground`, `--vscode-descriptionForeground`, `--vscode-list-hoverBackground`, `--vscode-list-activeSelectionBackground`.
 - Focus: `.result-button:focus-visible { outline: 1px solid var(--vscode-focusBorder); outline-offset: -1px; }` (Requirement 5.2).
 - Status: `--vscode-descriptionForeground`.
+- Meta icons: `.result-icon` with `.icon-calendar` / `.icon-download` use `mask-image` data URIs on `currentColor`; the CSP therefore adds `img-src data:`.
 - Loading bar: `--vscode-progressBar-background`, with `@media (prefers-reduced-motion: reduce)` replacing the animation by a static bar.
 
 ### 12. `src/extension.ts` and `src/vscode/testApi.ts`

@@ -27,6 +27,7 @@ describe('buildSearchHtml (Req 3.1, 3.2, 3.3)', () => {
     expect(csp).toContain("default-src 'none'");
     expect(csp).toContain(`script-src 'nonce-${nonce}'`);
     expect(csp).toContain('style-src vscode-webview-resource:');
+    expect(csp).toContain('img-src data:');
     expect(html).toContain(`<script nonce="${nonce}" src="media/search.js">`);
   });
 });
@@ -45,6 +46,13 @@ describe('media/search.css (Req 3.4)', () => {
   ])('references %s', (variable) => {
     expect(css).toContain(`var(${variable}`);
   });
+
+  it.each(['.result-icon', '.icon-calendar', '.icon-download', 'mask-image'])(
+    'styles the meta icons via %s',
+    (token) => {
+      expect(css).toContain(token);
+    },
+  );
 });
 
 describe('search webview script (Req 1.1, 1.6, 5.1, 7.2, 7.6, 8.7)', () => {
