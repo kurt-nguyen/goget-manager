@@ -140,6 +140,7 @@ describe('detail webview script', () => {
   let status: FakeEl;
   let error: FakeEl;
   let header: FakeEl;
+  let actionError: FakeEl;
   let main: FakeEl;
   let windowHandlers: Record<string, Handler>;
   let postMessage: ReturnType<typeof vi.fn>;
@@ -163,18 +164,20 @@ describe('detail webview script', () => {
     status = new FakeEl('div');
     error = new FakeEl('div');
     header = new FakeEl('header');
+    actionError = new FakeEl('div');
     main = new FakeEl('main');
     for (const [el, id] of [
       [root, 'detail-root'],
       [status, 'detail-status'],
       [error, 'detail-error'],
       [header, 'detail-header'],
+      [actionError, 'detail-action-error'],
       [main, 'detail-main'],
     ] as const) {
       el.setAttribute('id', id);
       if (el !== root) root.append(el);
     }
-    byId = { 'detail-root': root, 'detail-status': status, 'detail-error': error, 'detail-header': header, 'detail-main': main };
+    byId = { 'detail-root': root, 'detail-status': status, 'detail-error': error, 'detail-header': header, 'detail-action-error': actionError, 'detail-main': main };
     windowHandlers = {};
     postMessage = vi.fn();
     const doc = {
@@ -283,6 +286,54 @@ describe('detail webview script', () => {
     click(action()!);
     expect(postMessage).toHaveBeenCalledTimes(1);
     expect(postMessage).toHaveBeenCalledWith({ type: 'uninstall' });
+  });
+
+  it('shows a busy button without rebuilding the header, and ignores clicks meanwhile', () => {
+    send(ready(detail()));
+    const button = action()!;
+    const headerChildren = [...header.children];
+    send({ type: 'action', installed: false, busy: 'install' });
+    expect(action()).toBe(button);
+    expect(header.children).toEqual(headerChildren);
+    expect(button.textContent).toBe('Installing\u2026');
+    expect(button.attrs['aria-disabled']).toBe('true');
+    postMessage.mockClear();
+    click(button);
+    expect(postMessage).not.toHaveBeenCalled();
+
+    send({ type: 'action', installed: true });
+    expect(button.textContent).toBe('Uninstall');
+    expect(button.attrs['aria-disabled']).toBe('false');
+    click(button);
+    expect(postMessage).toHaveBeenCalledWith({ type: 'uninstall' });
+  });
+
+  it('shows an action error as text and hides it again', () => {
+    send(ready(detail()));
+    expect(actionError.hidden).toBe(true);
+    const hostile = '<img src=x onerror=1>';
+    send({ type: 'action', installed: false, error: hostile });
+    expect(actionError.hidden).toBe(false);
+    expect(actionError.textContent).toBe(hostile);
+    expect(actionError.children[0]?.tag).toBe('#text');
+    send({ type: 'action', installed: false, busy: 'install' });
+    expect(actionError.hidden).toBe(true);
+  });
+
+  it('renders busy and actionError from a state message', () => {
+    send(ready(detail(), { busy: 'uninstall', installed: true, actionError: 'earlier failure' }));
+    expect(action()?.textContent).toBe('Uninstalling\u2026');
+    expect(actionError.textContent).toBe('earlier failure');
+    send({ type: 'state', state: { status: 'idle', path: '', installed: false, mainLoading: false } });
+    expect(actionError.hidden).toBe(true);
+  });
+
+  it('ignores a malformed action message', () => {
+    send(ready(detail()));
+    send({ type: 'action', installed: 'yes' });
+    send({ type: 'action', installed: true, busy: 'x' });
+    send({ type: 'action', installed: true, error: 5 });
+    expect(action()?.textContent).toBe('Install');
   });
 
   it('omits the GOOS select when the page has no build context', () => {

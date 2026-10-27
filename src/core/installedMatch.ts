@@ -24,21 +24,39 @@ export function collectInstalledModulePaths(snapshot: InstalledSnapshot): string
 const MAJOR_VERSION_SEGMENT = /^v(?:[2-9]|[1-9]\d+)$/;
 
 /**
- * True when `packagePath` is an installed module or a package inside one.
- * Versions are ignored. `M/vN` is a different module than `M`.
+ * The longest installed module that contains `packagePath`: the path itself or
+ * a parent at a `/` boundary. Versions are ignored. `M/vN` is a different
+ * module than `M`.
  */
-export function isInstalledPackage(packagePath: string, installed: ReadonlySet<string>): boolean {
+export function findInstalledModule(packagePath: string, installed: ReadonlySet<string>): string | undefined {
   if (installed.has(packagePath)) {
-    return true;
+    return packagePath;
   }
   for (let end = packagePath.lastIndexOf('/'); end > 0; end = packagePath.lastIndexOf('/', end - 1)) {
-    if (!installed.has(packagePath.slice(0, end))) {
+    const module = packagePath.slice(0, end);
+    if (!installed.has(module)) {
       continue;
     }
     const next = packagePath.slice(end + 1).split('/', 1)[0] ?? '';
     if (!MAJOR_VERSION_SEGMENT.test(next)) {
-      return true;
+      return module;
     }
   }
-  return false;
+  return undefined;
+}
+
+/** True when `packagePath` is an installed module or a package inside one. */
+export function isInstalledPackage(packagePath: string, installed: ReadonlySet<string>): boolean {
+  return findInstalledModule(packagePath, installed) !== undefined;
+}
+
+/**
+ * True when `go get` can add the path: it does not look like a flag and its
+ * first segment is a domain (standard library paths have no dot there).
+ */
+export function isInstallablePath(path: string): boolean {
+  if (path === '' || path.startsWith('-')) {
+    return false;
+  }
+  return (path.split('/', 1)[0] ?? '').includes('.');
 }

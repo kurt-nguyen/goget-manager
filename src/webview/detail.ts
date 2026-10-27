@@ -4,6 +4,7 @@ import {
   ACTION_ID,
   GOOS_SELECT_ID,
   RETRY_CLASS,
+  renderActionError,
   renderGoosSelect,
   renderHeader,
   renderRetry,
@@ -74,6 +75,19 @@ function isInstalledMessage(data: unknown): data is Extract<HostToDetail, { type
   return record.type === 'installed' && typeof record.installed === 'boolean';
 }
 
+function isActionMessage(data: unknown): data is Extract<HostToDetail, { type: 'action' }> {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const record = data as Record<string, unknown>;
+  return (
+    record.type === 'action' &&
+    typeof record.installed === 'boolean' &&
+    (record.busy === undefined || record.busy === 'install' || record.busy === 'uninstall') &&
+    (record.error === undefined || typeof record.error === 'string')
+  );
+}
+
 interface MainRefs {
   readonly banner: HTMLElement;
   readonly loading: HTMLElement;
@@ -91,8 +105,9 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
   const statusEl = doc.getElementById('detail-status');
   const errorEl = doc.getElementById('detail-error');
   const headerEl = doc.getElementById('detail-header');
+  const actionErrorEl = doc.getElementById('detail-action-error');
   const mainEl = doc.getElementById('detail-main');
-  if (!root || !statusEl || !errorEl || !headerEl || !mainEl) {
+  if (!root || !statusEl || !errorEl || !headerEl || !actionErrorEl || !mainEl) {
     return;
   }
 
@@ -104,6 +119,7 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
   };
 
   let installed = false;
+  let busy: 'install' | 'uninstall' | undefined;
   let renderedDetail: PackageDetail | undefined;
   let actionButton: HTMLElement | undefined;
   let mainRefs: MainRefs | undefined;
@@ -122,6 +138,7 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
   };
 
   function clearContent(): void {
+    renderActionError(dom, asNode(actionErrorEl!), undefined);
     renderedDetail = undefined;
     actionButton = undefined;
     mainRefs = undefined;
@@ -239,6 +256,7 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
 
   function render(model: DetailViewModel): void {
     installed = model.installed;
+    busy = model.busy;
     if (model.status !== 'ready' || model.detail === undefined) {
       clearContent();
       renderStatus(dom, asNode(statusEl!), asNode(errorEl!), model);
@@ -248,11 +266,12 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
     const detail = model.detail;
     if (renderedDetail !== detail) {
       renderedDetail = detail;
-      actionButton = renderHeader(dom, asNode(headerEl!), detail, installed) as unknown as HTMLElement;
+      actionButton = renderHeader(dom, asNode(headerEl!), detail, installed, busy) as unknown as HTMLElement;
       buildMain(detail);
     } else if (actionButton) {
-      setInstalledButton(dom, asNode(actionButton), installed);
+      setInstalledButton(dom, asNode(actionButton), installed, busy);
     }
+    renderActionError(dom, asNode(actionErrorEl!), model.actionError);
     updateMainState(model, detail);
   }
 
@@ -263,8 +282,15 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
     } else if (isInstalledMessage(data)) {
       installed = data.installed;
       if (actionButton) {
-        setInstalledButton(dom, asNode(actionButton), installed);
+        setInstalledButton(dom, asNode(actionButton), installed, busy);
       }
+    } else if (isActionMessage(data)) {
+      installed = data.installed;
+      busy = data.busy;
+      if (actionButton) {
+        setInstalledButton(dom, asNode(actionButton), installed, busy);
+      }
+      renderActionError(dom, asNode(actionErrorEl!), data.error);
     }
   });
 
@@ -292,6 +318,9 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
       return;
     }
     if (target.closest(`#${ACTION_ID}`)) {
+      if (busy !== undefined) {
+        return;
+      }
       api.postMessage({ type: installed ? 'uninstall' : 'install' });
     }
   });

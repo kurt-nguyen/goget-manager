@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FolderGoModState, InstalledSnapshot } from '../../src/core/installedModel';
-import { collectInstalledModulePaths, isInstalledPackage } from '../../src/core/installedMatch';
+import { collectInstalledModulePaths, findInstalledModule, isInstallablePath, isInstalledPackage } from '../../src/core/installedMatch';
 
 function parsed(name: string, deps: Array<[string, string]>): FolderGoModState {
   return {
@@ -98,5 +98,31 @@ describe('isInstalledPackage', () => {
   it('is false for an empty set and for standard library paths', () => {
     expect(isInstalledPackage('github.com/x/y', set())).toBe(false);
     expect(isInstalledPackage('net/http', set('github.com/x/y'))).toBe(false);
+  });
+});
+
+describe('findInstalledModule', () => {
+  const set = (...paths: string[]): ReadonlySet<string> => new Set(paths);
+  it('returns the exact path and the parent module of a sub-package', () => {
+    expect(findInstalledModule('github.com/spf13/cobra', set('github.com/spf13/cobra'))).toBe('github.com/spf13/cobra');
+    expect(findInstalledModule('github.com/spf13/cobra/doc', set('github.com/spf13/cobra'))).toBe('github.com/spf13/cobra');
+  });
+  it('prefers the longer module and respects major version suffixes', () => {
+    expect(findInstalledModule('github.com/x/m/v2/sub', set('github.com/x/m', 'github.com/x/m/v2'))).toBe('github.com/x/m/v2');
+    expect(findInstalledModule('github.com/x/m/v2/sub', set('github.com/x/m'))).toBeUndefined();
+  });
+  it('does not match on a partial segment', () => {
+    expect(findInstalledModule('github.com/x/yy', set('github.com/x/y'))).toBeUndefined();
+  });
+});
+
+describe('isInstallablePath', () => {
+  it('accepts domain paths and rejects standard library, flags and empty', () => {
+    expect(isInstallablePath('github.com/spf13/cobra')).toBe(true);
+    expect(isInstallablePath('gopkg.in/yaml.v3')).toBe(true);
+    expect(isInstallablePath('os')).toBe(false);
+    expect(isInstallablePath('net/http')).toBe(false);
+    expect(isInstallablePath('-x.y/z')).toBe(false);
+    expect(isInstallablePath('')).toBe(false);
   });
 });

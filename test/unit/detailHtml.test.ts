@@ -34,6 +34,9 @@ describe('buildDetailHtml', () => {
     expect(error).toContain('role="alert"');
     expect(error).toMatch(/\bhidden\b/);
     expect(html).toMatch(/<header\b[^>]*\bid="detail-header"/);
+    const actionError = /<[a-z]+\b[^>]*\bid="detail-action-error"[^>]*>/.exec(html)?.[0];
+    expect(actionError).toContain('role="alert"');
+    expect(actionError).toMatch(/\bhidden\b/);
     expect(html).toMatch(/<main\b[^>]*\bid="detail-main"/);
     expect(html).toMatch(/<div\b[^>]*\bid="detail-root"/);
     expect(html).toContain('<title>Package details</title>');

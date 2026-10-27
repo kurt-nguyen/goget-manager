@@ -66,6 +66,17 @@ class FakePanel {
 }
 
 function setup() {
+  const actionCalls: string[] = [];
+  const actions = {
+    install: (path: string) => {
+      actionCalls.push(`install ${path}`);
+      return new Promise<never>(() => undefined);
+    },
+    uninstall: (path: string) => {
+      actionCalls.push(`uninstall ${path}`);
+      return new Promise<never>(() => undefined);
+    },
+  };
   const client = new FakeSearchClient();
   const output = new RecordingOutput();
   const controller = new DetailController({
@@ -73,6 +84,7 @@ function setup() {
     output,
     timers: new FakeTimers(),
     isInstalled: () => false,
+    actions,
   });
   const panels: FakePanel[] = [];
   const mediaRoots: Uri[] = [];
@@ -91,7 +103,7 @@ function setup() {
       return panel.asPanel;
     },
   );
-  return { client, output, controller, manager, panels, mediaRoots, opened };
+  return { client, output, controller, manager, panels, mediaRoots, opened, actionCalls };
 }
 
 describe('DetailPanelManager', () => {
@@ -148,7 +160,7 @@ describe('DetailPanelManager', () => {
   });
 
   it('routes changeGoos, retry, install and uninstall to the controller', async () => {
-    const { manager, panels, client, output } = setup();
+    const { manager, panels, client, actionCalls } = setup();
     manager.show(SFTP_PATH);
     client.calls[0]!.settle({ kind: 'ok', html: SFTP });
     await flushPromises();
@@ -162,12 +174,9 @@ describe('DetailPanelManager', () => {
     panel.send({ type: 'retry' });
     expect(client.calls[2]!.url).toBe(`https://pkg.go.dev/${SFTP_PATH}?GOOS=linux`);
 
-    output.lines.length = 0;
     panel.send({ type: 'install' });
-    panel.send({ type: 'uninstall' });
-    expect(output.lines).toHaveLength(2);
-    expect(output.lines[0]).toContain('Install requested');
-    expect(output.lines[1]).toContain('Uninstall requested');
+    expect(actionCalls).toEqual([`install ${SFTP_PATH}`]);
+    expect(panel.posted[panel.posted.length - 1]).toEqual({ type: 'action', installed: false, busy: 'install' });
   });
 
   it('opens links externally only for valid messages', () => {
@@ -183,7 +192,12 @@ describe('DetailPanelManager', () => {
 
   it('swallows a failing openExternal', async () => {
     const client = new FakeSearchClient();
-    const controller = new DetailController({ client, output: new RecordingOutput(), isInstalled: () => false });
+    const controller = new DetailController({
+      client,
+      output: new RecordingOutput(),
+      isInstalled: () => false,
+      actions: { install: () => Promise.resolve({ ok: true }), uninstall: () => Promise.resolve({ ok: true }) },
+    });
     const panel = new FakePanel();
     const manager = new DetailPanelManager(
       Uri.file('/ext') as never,

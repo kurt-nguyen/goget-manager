@@ -98,10 +98,55 @@ export function detailFailureLog(
   }
 }
 
-/** Output_Channel line for the Install/Uninstall stub. */
-export function installStubLog(ts: string, action: 'install' | 'uninstall', path: string): string {
+/** Button labels while an Install/Uninstall is running. */
+export const INSTALLING = 'Installing\u2026';
+export const UNINSTALLING = 'Uninstalling\u2026';
+
+export const NOT_INSTALLABLE = 'Standard library packages are part of Go and cannot be installed.';
+
+export const NO_GO_MOD_FOR_INSTALL = 'No go.mod file found in the workspace. Open a folder that contains one.';
+
+export const GO_NOT_FOUND = 'Go was not found. Install Go or add it to your PATH.';
+
+export type PackageAction = 'install' | 'uninstall';
+
+export function notRequired(path: string): string {
+  return `${path} is not required by any go.mod in the workspace.`;
+}
+
+export function goTimedOut(action: PackageAction): string {
+  return `The ${action} timed out. See the Goget Manager output for details.`;
+}
+
+export function goFailed(action: PackageAction, detail: string): string {
+  return `The ${action} failed: ${singleLine(detail)}`;
+}
+
+export function installNotRecorded(path: string): string {
+  return `go get finished but go.mod does not list ${path}.`;
+}
+
+export const PICK_FOLDER_INSTALL = 'Choose the go.mod to install into';
+
+export function pickFolderUninstall(path: string): string {
+  return `Choose the go.mod to remove ${path} from`;
+}
+
+/** Output_Channel line for the start of an Install/Uninstall. `ts` is an ISO 8601 string. */
+export function actionStartLog(ts: string, action: PackageAction, path: string, cwd: string, args: readonly string[]): string {
   const label = action === 'install' ? 'Install' : 'Uninstall';
-  return `[${ts}] ${label} requested for ${singleLine(path)}: not implemented yet.`;
+  return `[${ts}] ${label} ${singleLine(path)}: running "go ${singleLine(args.join(' '))}" in ${singleLine(cwd)}`;
+}
+
+/** Output_Channel text for the outcome of an Install/Uninstall; Go's raw output follows, indented. */
+export function actionResultLog(ts: string, action: PackageAction, path: string, outcome: string, output: string): string {
+  const label = action === 'install' ? 'Install' : 'Uninstall';
+  const header = `[${ts}] ${label} ${singleLine(path)}: ${singleLine(outcome)}`;
+  const body = output
+    .split(/\r?\n/)
+    .filter((line) => line.trim() !== '')
+    .map((line) => `    ${line}`);
+  return [header, ...body].join('\n');
 }
 
 /** Output_Channel line for a package page that was refused before opening. */

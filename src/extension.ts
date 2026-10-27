@@ -3,8 +3,10 @@ import { GoModRepository, createDefaultDeps } from './vscode/goModRepository';
 import { InstalledTreeProvider, SHOW_DETAIL_COMMAND } from './vscode/installedTreeProvider';
 import { DetailController } from './core/detailController';
 import { collectInstalledModulePaths, isInstalledPackage } from './core/installedMatch';
+import { PackageActions } from './core/packageActions';
 import { SearchController } from './core/searchController';
 import { DetailPanelManager } from './vscode/detailPanelManager';
+import { createGoRunner } from './vscode/goRunner';
 import { PkgGoDevSearchClient, nodeHttpsTransport } from './vscode/searchClient';
 import { SearchViewProvider } from './vscode/searchViewProvider';
 import { createTestApi } from './vscode/testApi';
@@ -28,10 +30,25 @@ export function activate(context: vscode.ExtensionContext): GogetManagerApi {
       void vscode.window.showErrorMessage(message);
     },
   });
+  const packageActions = new PackageActions({
+    snapshot: () => repository.snapshot(),
+    run: createGoRunner(),
+    refresh: () => repository.refreshAll(),
+    dirname: (goModPath) => goModPath.replace(/[\\/][^\\/]*$/, ''),
+    output,
+    pickFolder: async (candidates, placeHolder) => {
+      const picked = await vscode.window.showQuickPick(
+        candidates.map((candidate) => ({ label: candidate.label, description: candidate.goModPath, candidate })),
+        { placeHolder },
+      );
+      return picked?.candidate;
+    },
+  });
   const detailController = new DetailController({
     client: new PkgGoDevSearchClient(nodeHttpsTransport),
     output,
     isInstalled: (path) => isInstalledPackage(path, new Set(collectInstalledModulePaths(repository.snapshot()))),
+    actions: packageActions,
   });
   const detailManager = new DetailPanelManager(context.extensionUri, detailController, (url) =>
     vscode.env.openExternal(vscode.Uri.parse(url, true)),

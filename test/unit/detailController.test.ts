@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DetailController } from '../../src/core/detailController';
+import type { ActionResult } from '../../src/core/packageActions';
 import { EMPTY_DETAIL_STATE, type HostToDetail } from '../../src/core/detailProtocol';
 import {
   DETAIL_BAD_PAGE,
@@ -10,6 +11,7 @@ import {
   DETAIL_TIMED_OUT,
   UNREACHABLE,
   httpError,
+  installNotRecorded,
 } from '../../src/core/messages';
 import { FakeSearchClient, RecordingOutput, FIXED_TIMESTAMP, fixedClock, flushPromises } from './searchArbitraries';
 import { FakeTimers } from './fakeTimers';
@@ -27,6 +29,7 @@ interface Harness {
   readonly output: RecordingOutput;
   readonly timers: FakeTimers;
   readonly messages: HostToDetail[];
+  readonly actionCalls: { kind: 'install' | 'uninstall'; path: string; settle: (result: ActionResult) => void }[];
   installed: Set<string>;
 }
 
@@ -39,6 +42,7 @@ function setup(timeoutMs?: number): Harness {
     output,
     timers,
     messages: [],
+    actionCalls: [],
     installed: new Set(),
     controller: undefined as never,
   };
@@ -48,6 +52,10 @@ function setup(timeoutMs?: number): Harness {
     timers,
     now: fixedClock,
     isInstalled: (path) => h.installed.has(path),
+    actions: {
+      install: (path) => new Promise((resolve) => h.actionCalls.push({ kind: 'install', path, settle: resolve })),
+      uninstall: (path) => new Promise((resolve) => h.actionCalls.push({ kind: 'uninstall', path, settle: resolve })),
+    },
     ...(timeoutMs === undefined ? {} : { timeoutMs }),
   });
   h.controller.onDidChange((m) => h.messages.push(m));
@@ -317,6 +325,7 @@ describe('DetailController installed flag', () => {
       isInstalled: () => {
         throw new Error('nope');
       },
+      actions: { install: () => Promise.resolve({ ok: true }), uninstall: () => Promise.resolve({ ok: true }) },
     });
     controller.show(SFTP_PATH);
     await settleOk(h, 0, SFTP);
@@ -324,20 +333,158 @@ describe('DetailController installed flag', () => {
   });
 });
 
-describe('DetailController install/uninstall stubs', () => {
-  it('writes one log line per request and changes no state', async () => {
+async function settleAction(h: Harness, call: number, result: ActionResult): Promise<void> {
+  h.actionCalls[call]!.settle(result);
+  await flushPromises();
+}
+
+describe('DetailController install/uninstall', () => {
+  it('install goes busy synchronously, runs once, and ignores a second click', async () => {
     const h = setup();
     await loadSftp(h);
-    const before = h.controller.state;
     h.messages.length = 0;
 
     h.controller.requestInstall();
+    expect(h.messages).toEqual([{ type: 'action', installed: false, busy: 'install' }]);
+    expect(h.controller.state.busy).toBe('install');
+    h.controller.requestInstall();
     h.controller.requestUninstall();
-    expect(h.output.lines).toEqual([
-      `[${FIXED_TIMESTAMP}] Install requested for ${SFTP_PATH}: not implemented yet.`,
-      `[${FIXED_TIMESTAMP}] Uninstall requested for ${SFTP_PATH}: not implemented yet.`,
-    ]);
-    expect(h.controller.state).toBe(before);
+    expect(h.actionCalls).toHaveLength(1);
+    expect(h.actionCalls[0]).toMatchObject({ kind: 'install', path: SFTP_PATH });
+    expect(h.messages).toHaveLength(1);
+  });
+
+  it('install success re-reads go.mod state and clears busy', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+    h.messages.length = 0;
+    h.installed.add(SFTP_PATH);
+    await settleAction(h, 0, { ok: true });
+    expect(h.messages).toEqual([{ type: 'action', installed: true }]);
+    expect(h.controller.state).toMatchObject({ installed: true });
+    expect(h.controller.state.busy).toBeUndefined();
+    expect(h.controller.state.actionError).toBeUndefined();
+  });
+
+  it('install failure shows the error and leaves the installed flag alone', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+    h.messages.length = 0;
+    await settleAction(h, 0, { ok: false, error: 'boom' });
+    expect(h.messages).toEqual([{ type: 'action', installed: false, error: 'boom' }]);
+    expect(h.controller.state).toMatchObject({ installed: false, actionError: 'boom' });
+    expect(h.controller.state.busy).toBeUndefined();
+
+    h.controller.requestInstall();
+    expect(h.controller.state.actionError).toBeUndefined();
+    expect(h.actionCalls).toHaveLength(2);
+  });
+
+  it('install that did not change go.mod reports it', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+    await settleAction(h, 0, { ok: true });
+    expect(h.controller.state).toMatchObject({ installed: false, actionError: installNotRecorded(SFTP_PATH) });
+  });
+
+  it('a cancelled install shows nothing', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+    h.messages.length = 0;
+    await settleAction(h, 0, { ok: false, cancelled: true });
+    expect(h.messages).toEqual([{ type: 'action', installed: false }]);
+    expect(h.controller.state.actionError).toBeUndefined();
+  });
+
+  it('uninstall mirrors install, and contradicting requests are ignored', async () => {
+    const h = setup();
+    h.installed.add(SFTP_PATH);
+    await loadSftp(h);
+    h.controller.requestInstall();
+    expect(h.actionCalls).toHaveLength(0);
+
+    h.controller.requestUninstall();
+    expect(h.controller.state.busy).toBe('uninstall');
+    expect(h.actionCalls[0]).toMatchObject({ kind: 'uninstall', path: SFTP_PATH });
+    h.messages.length = 0;
+    h.installed.clear();
+    await settleAction(h, 0, { ok: true });
+    expect(h.messages).toEqual([{ type: 'action', installed: false }]);
+
+    h.controller.requestUninstall();
+    expect(h.actionCalls).toHaveLength(1);
+  });
+
+  it('a rejecting action becomes an error', async () => {
+    const h = setup();
+    const controller = new DetailController({
+      client: h.client,
+      output: h.output,
+      timers: h.timers,
+      isInstalled: () => false,
+      actions: { install: () => Promise.reject(new Error('kaput')), uninstall: () => Promise.resolve({ ok: true }) },
+    });
+    controller.show(SFTP_PATH);
+    await settleOk(h, 0, SFTP);
+    controller.requestInstall();
+    await flushPromises();
+    expect(controller.state.busy).toBeUndefined();
+    expect(controller.state.actionError).toContain('kaput');
+  });
+
+  it('busy survives switching away and back', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+
+    h.controller.show(COBRA_PATH);
+    await settleOk(h, 1, COBRA);
+    expect(h.controller.state.busy).toBeUndefined();
+    h.controller.show(SFTP_PATH);
+    await settleOk(h, 2, SFTP);
+    expect(h.controller.state.busy).toBe('install');
+    h.controller.requestInstall();
+    expect(h.actionCalls).toHaveLength(1);
+
+    h.messages.length = 0;
+    h.installed.add(SFTP_PATH);
+    await settleAction(h, 0, { ok: true });
+    expect(h.messages).toEqual([{ type: 'action', installed: true }]);
+  });
+
+  it('finishing after the user moved on emits nothing', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+    h.controller.show(COBRA_PATH);
+    await settleOk(h, 1, COBRA);
+    h.messages.length = 0;
+    await settleAction(h, 0, { ok: true });
+    expect(h.messages).toEqual([]);
+  });
+
+  it('reset mid-action emits nothing when the action settles', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+    h.controller.reset();
+    h.messages.length = 0;
+    await settleAction(h, 0, { ok: true });
+    expect(h.messages).toEqual([]);
+    expect(h.controller.state).toBe(EMPTY_DETAIL_STATE);
+  });
+
+  it('dispose mid-action emits nothing when the action settles', async () => {
+    const h = setup();
+    await loadSftp(h);
+    h.controller.requestInstall();
+    h.controller.dispose();
+    h.messages.length = 0;
+    await settleAction(h, 0, { ok: true });
     expect(h.messages).toEqual([]);
   });
 });

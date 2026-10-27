@@ -23,6 +23,7 @@ export function buildDetailHtml(
     <div id="detail-status" role="status" aria-live="polite"></div>
     <div id="detail-error" role="alert" hidden></div>
     <header id="detail-header"></header>
+    <div id="detail-action-error" role="alert" hidden></div>
     <main id="detail-main"></main>
   </div>
   <script nonce="${nonce}" src="${jsUri}"></script>

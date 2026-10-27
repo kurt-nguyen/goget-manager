@@ -1,5 +1,5 @@
 import type { DetailViewModel } from '../core/detailProtocol';
-import { detailLoading } from '../core/messages';
+import { INSTALLING, UNINSTALLING, detailLoading } from '../core/messages';
 import type { Link, PackageDetail } from '../core/packageDetail';
 import type { DomLike, NodeLike } from './render';
 
@@ -103,9 +103,32 @@ function buildLinks<N extends NodeLike>(dom: DomLike<N>, detail: PackageDetail):
   );
 }
 
-/** Sets the Install/Uninstall label on the action button. */
-export function setInstalledButton<N extends NodeLike>(dom: DomLike<N>, button: N, installed: boolean): void {
-  dom.replaceChildren(button, [dom.createTextNode(installed ? 'Uninstall' : 'Install')]);
+/**
+ * Sets the Install/Uninstall label on the action button. While `busy` the label
+ * shows progress and the button is marked `aria-disabled` (not `disabled`, so
+ * keyboard focus is kept).
+ */
+export function setInstalledButton<N extends NodeLike>(
+  dom: DomLike<N>,
+  button: N,
+  installed: boolean,
+  busy?: 'install' | 'uninstall',
+): void {
+  const label = busy === 'install' ? INSTALLING : busy === 'uninstall' ? UNINSTALLING : installed ? 'Uninstall' : 'Install';
+  dom.replaceChildren(button, [dom.createTextNode(label)]);
+  dom.setAttribute(button, 'aria-disabled', busy === undefined ? 'false' : 'true');
+  dom.setAttribute(button, 'aria-busy', busy === undefined ? 'false' : 'true');
+}
+
+/** Fills `container` with an Install/Uninstall failure message, or empties and hides it when `message` is undefined. */
+export function renderActionError<N extends NodeLike>(dom: DomLike<N>, container: N, message: string | undefined): void {
+  if (message === undefined) {
+    dom.replaceChildren(container, []);
+    container.hidden = true;
+    return;
+  }
+  dom.replaceChildren(container, [dom.createTextNode(message)]);
+  container.hidden = false;
 }
 
 /**
@@ -117,13 +140,14 @@ export function renderHeader<N extends NodeLike>(
   headerEl: N,
   detail: PackageDetail,
   installed: boolean,
+  busy?: 'install' | 'uninstall',
 ): N {
   const chips = detail.chips.map((chip) => textElement(dom, 'span', 'detail-chip', chip));
   const button = dom.createElement('button');
   dom.setAttribute(button, 'type', 'button');
   dom.setAttribute(button, 'id', ACTION_ID);
   dom.setAttribute(button, 'class', 'detail-action');
-  setInstalledButton(dom, button, installed);
+  setInstalledButton(dom, button, installed, busy);
 
   const titleRow = element(dom, 'div', 'detail-title-row', [
     textElement(dom, 'h1', 'detail-title', detail.title),

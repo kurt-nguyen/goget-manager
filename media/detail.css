@@ -153,6 +153,23 @@ select:focus-visible {
   background-color: var(--vscode-button-hoverBackground);
 }
 
+.detail-action[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.detail-action[aria-disabled="true"]:hover {
+  background-color: var(--vscode-button-background);
+}
+
+#detail-action-error {
+  margin: 8px 0;
+  padding: 4px 8px;
+  color: var(--vscode-errorForeground);
+  border: 1px solid var(--vscode-inputValidation-errorBorder);
+  overflow-wrap: anywhere;
+}
+
 .detail-import-path {
   margin-top: 4px;
   color: var(--vscode-descriptionForeground);

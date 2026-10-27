@@ -13,11 +13,21 @@ export interface DetailViewModel {
   readonly mainLoading: boolean;
   /** Page error (status `error`) or inline main error (status `ready`). */
   readonly error?: string;
+  /** An Install or Uninstall of this package is running. */
+  readonly busy?: 'install' | 'uninstall';
+  /** The last Install/Uninstall failed with this message. */
+  readonly actionError?: string;
 }
 
 export type HostToDetail =
   | { readonly type: 'state'; readonly state: DetailViewModel }
-  | { readonly type: 'installed'; readonly installed: boolean };
+  | { readonly type: 'installed'; readonly installed: boolean }
+  | {
+      readonly type: 'action';
+      readonly installed: boolean;
+      readonly busy?: 'install' | 'uninstall';
+      readonly error?: string;
+    };
 
 export type DetailToHost =
   | { readonly type: 'ready' }

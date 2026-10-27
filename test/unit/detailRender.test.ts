@@ -107,6 +107,30 @@ describe('renderHeader', () => {
     expect(button.text).toBe('Install');
   });
 
+  it('setInstalledButton shows progress and aria-disabled while busy, and restores the idle label', () => {
+    const button = new FakeNode('button');
+    setInstalledButton(dom, button, false, 'install');
+    expect(button.text).toBe('Installing\u2026');
+    expect(button.attrs['aria-disabled']).toBe('true');
+    setInstalledButton(dom, button, true, 'uninstall');
+    expect(button.text).toBe('Uninstalling\u2026');
+    setInstalledButton(dom, button, true);
+    expect(button.text).toBe('Uninstall');
+    expect(button.attrs['aria-disabled']).toBe('false');
+  });
+
+  it('setInstalledButton shows progress and aria-disabled while busy, and restores the idle label', () => {
+    const button = new FakeNode('button');
+    setInstalledButton(dom, button, false, 'install');
+    expect(button.text).toBe('Installing\u2026');
+    expect(button.attrs['aria-disabled']).toBe('true');
+    setInstalledButton(dom, button, true, 'uninstall');
+    expect(button.text).toBe('Uninstalling\u2026');
+    setInstalledButton(dom, button, true);
+    expect(button.text).toBe('Uninstall');
+    expect(button.attrs['aria-disabled']).toBe('false');
+  });
+
   it('renders the properties, chips and links', () => {
     const header = new FakeNode('header');
     renderHeader(dom, header, detail(), false);

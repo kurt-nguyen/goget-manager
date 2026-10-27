@@ -8,9 +8,11 @@ import {
   DETAIL_TIMED_OUT,
   UNREACHABLE,
   detailFailureLog,
+  goFailed,
   httpError,
-  installStubLog,
+  installNotRecorded,
 } from './messages';
+import type { ActionResult } from './packageActions';
 import { parsePackageDetail } from './packageDetail';
 import type { DisposableLike, OutputLike, SearchClient, SearchFailure, SearchResponse } from './searchController';
 
@@ -18,6 +20,11 @@ export interface DetailControllerDeps {
   readonly client: SearchClient;
   readonly output: OutputLike;
   readonly isInstalled: (path: string) => boolean;
+  /** Runs Install/Uninstall. The controller re-reads the installed flag afterwards; it never flips it itself. */
+  readonly actions: {
+    install(path: string): Promise<ActionResult>;
+    uninstall(path: string): Promise<ActionResult>;
+  };
   /** Timers for the request timeout. Default: global timers. */
   readonly timers?: TimerApi;
   /** Clock for output timestamps. Default `() => new Date()`. */
@@ -70,7 +77,7 @@ function failureStatus(failure: SearchFailure): string {
 /**
  * Owns the package detail state: fetching and parsing a pkg.go.dev page, GOOS
  * changes, retry, stale-response protection, the installed flag, and the
- * Install/Uninstall stub. Depends only on injected interfaces.
+ * Install/Uninstall state. Depends only on injected interfaces.
  */
 export class DetailController implements DisposableLike {
   private readonly timers: TimerApi;
@@ -82,6 +89,8 @@ export class DetailController implements DisposableLike {
   private inFlight: InFlight | undefined;
   /** The GOOS of the last `changeGoos` request, repeated by `retry`. */
   private requestedGoos: string | undefined;
+  /** Install/Uninstall runs in progress, by package path. */
+  private readonly pending = new Map<string, 'install' | 'uninstall'>();
   private disposed = false;
 
   constructor(private readonly deps: DetailControllerDeps) {
@@ -166,11 +175,11 @@ export class DetailController implements DisposableLike {
   }
 
   requestInstall(): void {
-    this.logStub('install');
+    this.runAction('install');
   }
 
   requestUninstall(): void {
-    this.logStub('uninstall');
+    this.runAction('uninstall');
   }
 
   /** The tab was closed: drop all work and go back to idle. */
@@ -192,11 +201,38 @@ export class DetailController implements DisposableLike {
     this.listeners.clear();
   }
 
-  private logStub(action: 'install' | 'uninstall'): void {
-    if (this.disposed || this.current.path === '') {
+  private runAction(kind: 'install' | 'uninstall'): void {
+    const { status, path, installed } = this.current;
+    if (this.disposed || status !== 'ready' || this.pending.has(path) || installed === (kind === 'install')) {
       return;
     }
-    this.write(installStubLog(this.now().toISOString(), action, this.current.path));
+    this.pending.set(path, kind);
+    const { actionError: _actionError, ...rest } = this.current;
+    this.current = { ...rest, busy: kind };
+    this.emit({ type: 'action', installed, busy: kind });
+    void this.finishAction(kind, path);
+  }
+
+  private async finishAction(kind: 'install' | 'uninstall', path: string): Promise<void> {
+    let result: ActionResult;
+    try {
+      result = await (kind === 'install' ? this.deps.actions.install(path) : this.deps.actions.uninstall(path));
+    } catch (err) {
+      this.log(`${kind} failed: ${errorText(err)}`);
+      result = { ok: false, error: goFailed(kind, err instanceof Error ? err.message : String(err)) };
+    }
+    this.pending.delete(path);
+    if (this.disposed || this.current.status !== 'ready' || this.current.path !== path) {
+      return;
+    }
+    const installed = this.computeInstalled(path);
+    let error = result.ok || result.cancelled === true ? undefined : result.error;
+    if (result.ok && kind === 'install' && !installed) {
+      error = installNotRecorded(path);
+    }
+    const { busy: _busy, actionError: _actionError, ...rest } = this.current;
+    this.current = error === undefined ? { ...rest, installed } : { ...rest, installed, actionError: error };
+    this.emit(error === undefined ? { type: 'action', installed } : { type: 'action', installed, error });
   }
 
   private computeInstalled(path: string): boolean {
@@ -321,7 +357,9 @@ export class DetailController implements DisposableLike {
     }
   }
 
-  private setState(state: DetailViewModel): void {
+  private setState(next: DetailViewModel): void {
+    const busy = next.status === 'ready' ? this.pending.get(next.path) : undefined;
+    const state = busy === undefined ? next : { ...next, busy };
     this.current = state;
     this.emit({ type: 'state', state });
   }
