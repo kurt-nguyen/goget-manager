@@ -92,6 +92,10 @@ body {
   padding: 0;
 }
 
+.result + .result {
+  border-top: 1px solid var(--vscode-panel-border);
+}
+
 .result-button {
   box-sizing: border-box;
   display: block;
