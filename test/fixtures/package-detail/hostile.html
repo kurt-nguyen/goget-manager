@@ -1,0 +1,45 @@
+<div class="readme-root" id="postMessage" name="evil" style="position:fixed" onclick="alert(1)">
+<base href="https://evil.example/">
+<meta http-equiv="refresh" content="0;url=https://evil.example/">
+<script>alert('script body')</script>
+<style>body { display: none }</style>
+<iframe src="https://evil.example/frame"><p>iframe fallback</p></iframe>
+<object data="https://evil.example/o"><param name="x" value="y"></object>
+<embed src="https://evil.example/e">
+<form action="https://evil.example/post" method="post"><input name="q" value="form input"><button>form button</button></form>
+<svg onload="alert(2)" viewBox="0 0 1 1"><circle r="1"></circle><text>svg text</text></svg>
+<math><mi>math text</mi></math>
+<select><option>select option</option></select>
+<textarea>textarea text</textarea>
+<noscript>noscript text</noscript>
+<video src="https://evil.example/v">video text</video>
+<h3 id="readme-title" class="h2 bad class! 9lives" onmouseover="alert(3)" data-x="1" aria-label="x">Title &copy; 2026 &mdash; ok</h3>
+<p lang="en" dir="rtl" title="tip &reg;" style="color:red" onclick="alert(4)">Paragraph with <custom-tag data-a="1">unknown <b>bold</b></custom-tag> and <blink>blink</blink> text.</p>
+<p><a href="javascript:alert(5)" onclick="alert(6)" target="_blank">js link</a>
+<a href="JaVaScRiPt:alert(7)">mixed case js</a>
+<a href="jav&#x61;script:alert(8)">entity js</a>
+<a href="java	script:alert(9)">tab js</a>
+<a href="data:text/html,&lt;script&gt;alert(10)&lt;/script&gt;">data link</a>
+<a href="vbscript:msgbox(11)">vb link</a>
+<a href="file:///etc/passwd">file link</a>
+<a href="https://example.com/ok?a=1&amp;b=2" name="anchor" style="x:y">ok link</a>
+<a href="mailto:dev@example.com">mail link</a>
+<a href="#readme-title">fragment link</a>
+<a href="/syscall#O_RDONLY">root relative</a>
+<a href="?tab=versions">query relative</a>
+<a>no href</a></p>
+<p><img src="https://example.com/badge.svg" alt="badge" srcset="https://evil.example/2x.png 2x" onerror="alert(12)" style="width:1px" width="10" height="x">
+<img src="data:image/png;base64,AAAA" alt="data image">
+<img src="javascript:alert(13)" alt="js image">
+<img src="http://example.com/insecure.png" alt="http image">
+<img src="/static/logo.png" alt="relative image">
+<img alt="no src"></p>
+<table onclick="alert(14)"><caption>cap</caption><thead><tr><th colspan="2" align="center" onclick="x">h</th></tr></thead><tbody><tr><td rowspan="3" style="x">c</td></tr></tbody></table>
+<ol start="3" type="a"><li>three</li></ol>
+<details open class="go-Tooltip"><summary>sum</summary>inside details</details>
+<p>Unbalanced <b>bold <i>italic</b> still italic?
+<div>stray </span></p></em> end tags
+<pre>code &lt;script&gt;alert(15)&lt;/script&gt; &amp; more</pre>
+<h4 id="bad id with spaces">bad id</h4>
+<h4 id="Client.Chmod">good id</h4>
+</div>
