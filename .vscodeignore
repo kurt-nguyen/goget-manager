@@ -10,6 +10,7 @@ coverage/**
 **/*.ts
 **/*.map
 !media/search.js
+!media/detail.js
 tsconfig.json
 vitest.config.ts
 esbuild.mjs
@@ -18,3 +19,5 @@ esbuild.integration.mjs
 .vscodeignore
 package-lock.json
 *.vsix
+sample-pages/**
+.agents/**

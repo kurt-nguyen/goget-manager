@@ -5,3 +5,4 @@ coverage/
 .vscode-test/
 *.vsix
 media/search.js
+media/detail.js

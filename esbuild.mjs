@@ -29,6 +29,18 @@ configs.push({
   logLevel: 'info',
 });
 
+// Package detail webview script (browser, IIFE).
+configs.push({
+  entryPoints: ['src/webview/detail.ts'],
+  outfile: 'media/detail.js',
+  bundle: true,
+  platform: 'browser',
+  format: 'iife',
+  target: 'es2022',
+  sourcemap: false,
+  logLevel: 'info',
+});
+
 if (watch) {
   const contexts = await Promise.all(configs.map((c) => esbuild.context(c)));
   await Promise.all(contexts.map((ctx) => ctx.watch()));
