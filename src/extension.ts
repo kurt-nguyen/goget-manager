@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { GoModRepository, createDefaultDeps } from './vscode/goModRepository';
-import { InstalledTreeProvider } from './vscode/installedTreeProvider';
+import { InstalledTreeProvider, SHOW_DETAIL_COMMAND } from './vscode/installedTreeProvider';
 import { DetailController } from './core/detailController';
 import { collectInstalledModulePaths, isInstalledPackage } from './core/installedMatch';
 import { SearchController } from './core/searchController';
@@ -51,6 +51,11 @@ export function activate(context: vscode.ExtensionContext): GogetManagerApi {
   });
 
   const refreshCommand = vscode.commands.registerCommand('gogetManager.refresh', () => repository.refreshAll());
+  const showDetailCommand = vscode.commands.registerCommand(SHOW_DETAIL_COMMAND, (path: unknown) => {
+    if (typeof path === 'string') {
+      detailManager.show(path);
+    }
+  });
 
   context.subscriptions.push(
     output,
@@ -64,6 +69,7 @@ export function activate(context: vscode.ExtensionContext): GogetManagerApi {
     searchProvider,
     searchRegistration,
     refreshCommand,
+    showDetailCommand,
   );
 
   void repository.initialize().catch((err: unknown) => {

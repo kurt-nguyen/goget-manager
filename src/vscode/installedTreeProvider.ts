@@ -9,6 +9,9 @@ import { buildInstalledTree } from '../core/installedModel';
 import type { InstalledNode, InstalledSnapshot } from '../core/installedModel';
 import { toTreeItemProps } from '../core/treeItemProps';
 
+/** Internal command run when a package in the Installed view is clicked; takes the import path. */
+export const SHOW_DETAIL_COMMAND = 'gogetManager.showDetail';
+
 /** The slice of `GoModRepository` the tree provider needs. */
 export interface InstalledRepository {
   readonly onDidChange: vscode.Event<void>;
@@ -59,6 +62,9 @@ export class InstalledTreeProvider implements vscode.TreeDataProvider<InstalledN
     }
     if (props.tooltip !== undefined) {
       item.tooltip = props.tooltip;
+    }
+    if (node.kind === 'package') {
+      item.command = { command: SHOW_DETAIL_COMMAND, title: 'Show package details', arguments: [node.path] };
     }
     return item;
   }
