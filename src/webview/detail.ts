@@ -133,7 +133,7 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
     mainEl!.setAttribute('class', 'detail-main');
   }
 
-  function buildReadme(detail: PackageDetail): HTMLElement | undefined {
+  function buildReadme(detail: PackageDetail): { section: HTMLElement; collapseIfTall: () => void } | undefined {
     if (detail.readmeHtml === undefined) {
       return undefined;
     }
@@ -150,16 +150,19 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
     content.innerHTML = detail.readmeHtml;
     section.append(head, content);
 
-    if (content.scrollHeight > README_COLLAPSE_HEIGHT) {
-      content.classList.add('is-collapsed');
-      toggle.hidden = false;
-    }
     toggle.addEventListener('click', () => {
       const collapsed = content.classList.toggle('is-collapsed');
       toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       toggle.textContent = collapsed ? 'Expand' : 'Collapse';
     });
-    return section;
+    // scrollHeight is 0 for a detached element, so this runs after the section is in the document.
+    const collapseIfTall = (): void => {
+      if (content.scrollHeight > README_COLLAPSE_HEIGHT) {
+        content.classList.add('is-collapsed');
+        toggle.hidden = false;
+      }
+    };
+    return { section, collapseIfTall };
   }
 
   function buildDocumentation(detail: PackageDetail): { section: HTMLElement | undefined; gooSlot: HTMLElement | undefined } {
@@ -196,7 +199,7 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
     const docs = buildDocumentation(detail);
     const children: HTMLElement[] = [banner];
     if (readme) {
-      children.push(readme);
+      children.push(readme.section);
     }
     if (docs.section) {
       children.push(docs.section);
@@ -205,6 +208,7 @@ export function startDetailView(doc: Document, win: Window, api: DetailWebviewAp
       children.push(textEl('p', 'detail-empty', 'No documentation is available for this package.'));
     }
     mainEl!.replaceChildren(...children);
+    readme?.collapseIfTall();
     mainRefs = { banner, loading, error, gooSlot: docs.gooSlot };
     lastGoosKey = undefined;
   }
