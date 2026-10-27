@@ -16,7 +16,9 @@ export type WebviewToHost =
   | { readonly type: 'submit'; readonly text: string }
   | { readonly type: 'open'; readonly resultsVersion: number; readonly index: number };
 
-export type HostToWebview = { readonly type: 'state'; readonly state: SearchViewModel };
+export type HostToWebview =
+  | { readonly type: 'state'; readonly state: SearchViewModel }
+  | { readonly type: 'installed'; readonly modules: readonly string[] };
 
 export const EMPTY_VIEW_MODEL: SearchViewModel = Object.freeze({
   results: Object.freeze([]) as readonly PackageResult[],

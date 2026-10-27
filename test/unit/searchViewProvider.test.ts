@@ -427,4 +427,65 @@ describe('SearchViewProvider', () => {
       }).not.toThrow();
     });
   });
+
+  describe('installed modules', () => {
+    function setupInstalled(): {
+      provider: SearchViewProvider;
+      emitter: EventEmitter<void>;
+      current: { modules: string[] };
+    } {
+      const h = createControllerHarness();
+      const emitter = new EventEmitter<void>();
+      const current = { modules: ['github.com/x/y'] };
+      const provider = new SearchViewProvider(Uri.file('/ext') as never, h.controller, {
+        onDidChange: emitter.event as never,
+        modules: () => current.modules,
+      });
+      return { provider, emitter, current };
+    }
+
+    it('posts installed before state on ready', () => {
+      const { provider } = setupInstalled();
+      const view = new FakeWebviewView();
+      provider.resolveWebviewView(view.asView);
+      expect(view.posted).toEqual([]);
+      view.send({ type: 'ready' });
+      expect(view.posted).toEqual([
+        { type: 'installed', modules: ['github.com/x/y'] },
+        { type: 'state', state: EMPTY_VIEW_MODEL },
+      ]);
+    });
+
+    it('posts a fresh installed message on every change', () => {
+      const { provider, emitter, current } = setupInstalled();
+      const view = new FakeWebviewView();
+      provider.resolveWebviewView(view.asView);
+      current.modules = ['github.com/a/b', 'github.com/x/y'];
+      emitter.fire();
+      expect(view.posted).toEqual([{ type: 'installed', modules: ['github.com/a/b', 'github.com/x/y'] }]);
+    });
+
+    it('stops posting after the view is disposed or re-resolved, without accumulating listeners', () => {
+      const { provider, emitter } = setupInstalled();
+      const first = new FakeWebviewView();
+      provider.resolveWebviewView(first.asView);
+      first.dispose();
+      emitter.fire();
+      expect(first.posted).toEqual([]);
+
+      const second = new FakeWebviewView();
+      provider.resolveWebviewView(second.asView);
+      const third = new FakeWebviewView();
+      provider.resolveWebviewView(third.asView);
+      emitter.fire();
+      expect(second.posted).toEqual([]);
+      expect(third.posted).toHaveLength(1);
+    });
+
+    it('never posts installed when the provider has no source', () => {
+      const { view } = setup();
+      view.send({ type: 'ready' });
+      expect(view.posted.some((m) => m.type === 'installed')).toBe(false);
+    });
+  });
 });

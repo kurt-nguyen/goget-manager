@@ -1,3 +1,4 @@
+import { isInstalledPackage } from '../core/installedMatch';
 import { toResultEntry, type ResultEntry } from '../core/resultView';
 import type { SearchViewModel } from '../core/searchProtocol';
 
@@ -27,8 +28,10 @@ export interface RenderElements<N extends NodeLike = NodeLike> {
   readonly loading: N;
 }
 
-/** Last `resultsVersion` rendered into each Result_List element. */
-const renderedVersions = new WeakMap<object, number>();
+/** Last `resultsVersion` and installed result indexes (comma-joined) rendered into each Result_List element. */
+const renderedVersions = new WeakMap<object, { version: number; flags: string }>();
+
+const NO_INSTALLED: ReadonlySet<string> = new Set();
 
 function textSpan<N extends NodeLike>(dom: DomLike<N>, className: string, ...texts: string[]): N {
   const span = dom.createElement('span');
@@ -62,11 +65,20 @@ function iconValueSpan<N extends NodeLike>(
   return span;
 }
 
-function buildDescription<N extends NodeLike>(dom: DomLike<N>, entry: ResultEntry, id: string): N {
+function buildDescription<N extends NodeLike>(
+  dom: DomLike<N>,
+  entry: ResultEntry,
+  id: string,
+  installed: boolean,
+): N {
   const desc = dom.createElement('span');
   dom.setAttribute(desc, 'id', id);
   dom.setAttribute(desc, 'class', 'result-desc');
   const children: N[] = [];
+
+  if (installed) {
+    children.push(textSpan(dom, 'result-badge installed-badge', 'Installed'));
+  }
 
   if (entry.synopsis !== undefined) {
     children.push(textSpan(dom, 'result-synopsis', entry.synopsis));
@@ -98,6 +110,7 @@ function buildResult<N extends NodeLike>(
   entry: ResultEntry,
   version: number,
   index: number,
+  installed: boolean,
 ): N {
   const item = dom.createElement('li');
   dom.setAttribute(item, 'class', 'result');
@@ -113,7 +126,7 @@ function buildResult<N extends NodeLike>(
   dom.replaceChildren(button, [
     textSpan(dom, 'result-path', entry.path),
     textSpan(dom, 'result-name', entry.name),
-    buildDescription(dom, entry, descId),
+    buildDescription(dom, entry, descId, installed),
   ]);
 
   dom.replaceChildren(item, [button]);
@@ -122,22 +135,33 @@ function buildResult<N extends NodeLike>(
 
 /**
  * Renders the host's view state. The Result_List is rebuilt only when
- * `resultsVersion` changes, so status and loading updates never move focus.
- * The Status_Message text is assigned only when it differs, so the live
- * region announces each change once.
+ * `resultsVersion` or the per-result installed flags change, so status and
+ * loading updates never move focus. The Status_Message text is assigned only
+ * when it differs, so the live region announces each change once.
  */
 export function renderState<N extends NodeLike>(
   dom: DomLike<N>,
   elements: RenderElements<N>,
   state: SearchViewModel,
+  installed: ReadonlySet<string> = NO_INSTALLED,
 ): void {
-  if (renderedVersions.get(elements.results) !== state.resultsVersion) {
+  const installedIndexes = new Set<number>();
+  state.results.forEach((result, index) => {
+    if (isInstalledPackage(result.path, installed)) {
+      installedIndexes.add(index);
+    }
+  });
+  const flags = [...installedIndexes].join(',');
+  const rendered = renderedVersions.get(elements.results);
+  if (rendered?.version !== state.resultsVersion || rendered.flags !== flags) {
     const version = state.resultsVersion;
     dom.replaceChildren(
       elements.results,
-      state.results.map((result, index) => buildResult(dom, toResultEntry(result), version, index)),
+      state.results.map((result, index) =>
+        buildResult(dom, toResultEntry(result), version, index, installedIndexes.has(index)),
+      ),
     );
-    renderedVersions.set(elements.results, version);
+    renderedVersions.set(elements.results, { version, flags });
   }
 
   if (elements.status.textContent !== state.status) {

@@ -24,7 +24,7 @@ const realDom: DomLike<DomNode> = {
   setAttribute: (node, name, value) => (node as unknown as Element).setAttribute(name, value),
 };
 
-function isStateMessage(data: unknown): data is HostToWebview {
+function isStateMessage(data: unknown): data is Extract<HostToWebview, { type: 'state' }> {
   if (typeof data !== 'object' || data === null) {
     return false;
   }
@@ -38,6 +38,18 @@ function isStateMessage(data: unknown): data is HostToWebview {
     typeof state.status === 'string' &&
     typeof state.loading === 'boolean' &&
     typeof state.resultsVersion === 'number'
+  );
+}
+
+function isInstalledMessage(data: unknown): data is Extract<HostToWebview, { type: 'installed' }> {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const record = data as Record<string, unknown>;
+  return (
+    record.type === 'installed' &&
+    Array.isArray(record.modules) &&
+    record.modules.every((module) => typeof module === 'string')
   );
 }
 
@@ -86,9 +98,26 @@ function parseIndex(value: string | null): number | undefined {
       loading: loading as unknown as DomNode,
     };
 
+    let lastState: SearchViewModel | undefined;
+    let installed: ReadonlySet<string> = new Set();
+
     window.addEventListener('message', (event: MessageEvent) => {
       if (isStateMessage(event.data)) {
-        renderState(realDom, elements, event.data.state);
+        lastState = event.data.state;
+        renderState(realDom, elements, lastState, installed);
+      } else if (isInstalledMessage(event.data)) {
+        installed = new Set(event.data.modules);
+        if (lastState === undefined) {
+          return;
+        }
+        // A rebuild drops focus from the focused result, so restore it by index.
+        const active = document.activeElement as Element | null | undefined;
+        const focusedIndex = parseIndex(active?.closest?.('.result-button')?.getAttribute('data-index') ?? null);
+        renderState(realDom, elements, lastState, installed);
+        if (focusedIndex !== undefined) {
+          const button = results.querySelector?.(`.result-button[data-index="${focusedIndex}"]`);
+          (button as HTMLElement | null | undefined)?.focus?.();
+        }
       }
     });
 

@@ -47,6 +47,13 @@ describe('media/search.css (Req 3.4)', () => {
     expect(css).toContain(`var(${variable}`);
   });
 
+  it.each(['.result-badge', '.installed-badge', '--vscode-badge-background', '--vscode-badge-foreground'])(
+    'styles the Installed badge via %s',
+    (token) => {
+      expect(css).toContain(token);
+    },
+  );
+
   it.each(['.result-icon', '.icon-calendar', '.icon-download', 'mask-image'])(
     'styles the meta icons via %s',
     (token) => {
@@ -206,6 +213,46 @@ describe('search webview script (Req 1.1, 1.6, 5.1, 7.2, 7.6, 8.7)', () => {
     expect(results.children).toHaveLength(1);
     expect(status.textContent).toBe('1 result');
     expect(loading.hidden).toBe(false);
+  });
+
+  const cobraState = {
+    type: 'state',
+    state: {
+      results: [{ path: 'github.com/spf13/cobra', name: 'cobra' }],
+      status: '1 result',
+      loading: false,
+      resultsVersion: 1,
+    },
+  };
+  const badgeOf = (): FakeNode | undefined =>
+    results.children[0]?.children[0]?.children[2]?.children.find(
+      (c) => c.attrs.class === 'result-badge installed-badge',
+    );
+
+  it('shows the Installed badge when an installed message follows the state', async () => {
+    await runScript();
+    windowHandlers.message!({ data: cobraState });
+    expect(badgeOf()).toBeUndefined();
+    windowHandlers.message!({ data: { type: 'installed', modules: ['github.com/spf13/cobra'] } });
+    expect(badgeOf()?.children[0]?.textContent).toBe('Installed');
+    windowHandlers.message!({ data: { type: 'installed', modules: [] } });
+    expect(badgeOf()).toBeUndefined();
+  });
+
+  it('applies an installed message that arrived before any state', async () => {
+    await runScript();
+    windowHandlers.message!({ data: { type: 'installed', modules: ['github.com/spf13/cobra'] } });
+    expect(results.children).toHaveLength(0);
+    windowHandlers.message!({ data: cobraState });
+    expect(badgeOf()).toBeDefined();
+  });
+
+  it('ignores malformed installed messages', async () => {
+    await runScript();
+    windowHandlers.message!({ data: cobraState });
+    windowHandlers.message!({ data: { type: 'installed', modules: ['github.com/spf13/cobra', 1] } });
+    windowHandlers.message!({ data: { type: 'installed' } });
+    expect(badgeOf()).toBeUndefined();
   });
 
   it('ignores messages that are not state messages', async () => {

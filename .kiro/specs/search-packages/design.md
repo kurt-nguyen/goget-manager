@@ -338,7 +338,9 @@ export type WebviewToHost =
   | { readonly type: 'submit'; readonly text: string }
   | { readonly type: 'open'; readonly resultsVersion: number; readonly index: number };
 
-export type HostToWebview = { readonly type: 'state'; readonly state: SearchViewModel };
+export type HostToWebview =
+  | { readonly type: 'state'; readonly state: SearchViewModel }
+  | { readonly type: 'installed'; readonly modules: readonly string[] };
 
 /** Validates an untrusted message. Never throws. Clamps `text` to 256 code points.
  *  Returns undefined for unknown types, extra-typed fields, or non-integer numbers. */
@@ -471,6 +473,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 
 - `webview.onDidReceiveMessage` → `parseWebviewMessage`; invalid messages are dropped. `ready` → post the current state. `query` → `controller.queryChanged`. `submit` → `controller.submit`. `open` → `controller.open`.
 - `controller.onDidChangeState` → `webview.postMessage({ type: 'state', state })` for the currently resolved view. With `retainContextWhenHidden: true`, a hidden webview still receives messages. A re-resolved webview (new instance) sends `ready` and receives the latest state (Requirement 7.2).
+- Optional `InstalledModulesSource` (the go.mod repository's `onDidChange` plus the module paths from `collectInstalledModulePaths(snapshot())`): on `ready` the provider posts `{ type: 'installed', modules }` before the state, and posts a fresh `installed` message on every source change. Without a source, nothing extra is posted.
 - Subscriptions are disposed when the view is disposed or re-resolved.
 
 ### 10. Webview: `src/webview/search.ts` and `src/webview/render.ts`
@@ -481,11 +484,12 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
 - `input`: `setState({ text: clampSearchText(value) })`, then post `{ type: 'query', text }`.
 - `keydown` Enter (and not `isComposing`): `preventDefault()`, post `{ type: 'submit', text }`.
 - `message` `{ type: 'state' }`: `renderState(state)`.
+- `message` `{ type: 'installed' }`: store the module paths and re-render the last state (focus on a result button is restored by `data-index`). Matching (`isInstalledPackage` in `src/core/installedMatch.ts`) ignores versions: a result is installed when its path equals an installed module path or is a package inside one, except that a `/vN` (N >= 2) segment after the module path means a different module.
 - Result `click` (fired by mouse, Enter, and Space on a button): post `{ type: 'open', resultsVersion, index }` read from `data-` attributes.
 
 `render.ts` holds the DOM logic behind a small `DomLike` interface (`createElement`, `createTextNode`, `replaceChildren`, `setAttribute`, `textContent`, `hidden`) so unit tests can use a fake DOM, as `searchView.test.ts` already does.
 
-- **Result_List**: rebuilt only when `resultsVersion` changes, so typing and status changes do not move focus. Each entry:
+- **Result_List**: rebuilt only when `resultsVersion` or the per-result installed flags change, so typing and status changes do not move focus. Each entry:
 
   ```html
   <li class="result">
@@ -494,6 +498,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider {
       <span class="result-path"><path></span>
       <span class="result-name"><name></span>
       <span id="r<ver>-<i>-desc" class="result-desc">
+        <span class="result-badge installed-badge">Installed</span> <!-- only when the module is installed -->
         <span class="result-synopsis"><synopsis></span>
         <span class="result-meta">
           <span class="result-version"><version></span>

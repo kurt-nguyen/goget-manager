@@ -48,6 +48,12 @@ function toPostedState(state: SearchViewModel): SearchViewModel {
   };
 }
 
+/** The slice of the go.mod repository the Search view needs to show Installed badges. */
+export interface InstalledModulesSource {
+  readonly onDidChange: vscode.Event<void>;
+  modules(): readonly string[];
+}
+
 export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   static readonly viewId = 'gogetManager.search';
 
@@ -57,6 +63,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Di
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly controller: SearchController,
+    private readonly installed?: InstalledModulesSource,
   ) {}
 
   /** True once VS Code has asked this provider to resolve the view (read by the test API). */
@@ -89,7 +96,17 @@ export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Di
       void Promise.resolve(webview.postMessage(message)).catch(() => undefined);
     };
 
+    const installed = this.installed;
+    const postInstalled = (): void => {
+      if (installed === undefined) {
+        return;
+      }
+      const message: HostToWebview = { type: 'installed', modules: installed.modules() };
+      void Promise.resolve(webview.postMessage(message)).catch(() => undefined);
+    };
+
     this.viewSubscriptions.push(
+      ...(installed ? [installed.onDidChange(postInstalled)] : []),
       webview.onDidReceiveMessage((raw: unknown) => {
         const message = parseWebviewMessage(raw);
         if (message === undefined) {
@@ -97,6 +114,7 @@ export class SearchViewProvider implements vscode.WebviewViewProvider, vscode.Di
         }
         switch (message.type) {
           case 'ready':
+            postInstalled();
             post(this.controller.state);
             break;
           case 'query':

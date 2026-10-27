@@ -194,3 +194,64 @@ describe('renderState (Req 1.1, 4.6, 5.1, 7.4)', () => {
     expect(elements.status.text).toBe('No packages found for "x".');
   });
 });
+
+describe('renderState installed badge', () => {
+  const descOf = (item: FakeNode): FakeNode => item.children[0]!.children[2]!;
+  const badgesIn = (desc: FakeNode): FakeNode[] =>
+    desc.children.filter((c) => c.attrs.class === 'result-badge installed-badge');
+
+  it('puts an Installed badge first in the description of an installed result only', () => {
+    const { dom, elements } = createDom();
+    renderState(dom, elements, model(), new Set(['github.com/spf13/cobra']));
+    const [cobra, viper] = elements.results.children as [FakeNode, FakeNode];
+    const desc = descOf(cobra);
+    expect(desc.children[0]!.attrs.class).toBe('result-badge installed-badge');
+    expect(desc.children[0]!.children.map((c) => c.text)).toEqual(['Installed']);
+    expect(desc.children[1]!.attrs.class).toBe('result-synopsis');
+    expect(badgesIn(descOf(viper))).toHaveLength(0);
+  });
+
+  it('badges a sub-package of an installed module but not a different major version', () => {
+    const { dom, elements } = createDom();
+    renderState(
+      dom,
+      elements,
+      model({
+        results: [
+          { path: 'github.com/spf13/cobra/doc', name: 'doc' },
+          { path: 'github.com/spf13/cobra/v2', name: 'cobra' },
+        ],
+      }),
+      new Set(['github.com/spf13/cobra']),
+    );
+    const [doc, v2] = elements.results.children as [FakeNode, FakeNode];
+    expect(badgesIn(descOf(doc))).toHaveLength(1);
+    expect(badgesIn(descOf(v2))).toHaveLength(0);
+  });
+
+  it('rebuilds once when the installed flags change without a new resultsVersion', () => {
+    const { dom, elements, listRebuilds } = createDom();
+    renderState(dom, elements, model());
+    expect(listRebuilds()).toBe(1);
+    const installed = new Set(['github.com/spf13/cobra']);
+    renderState(dom, elements, model(), installed);
+    expect(listRebuilds()).toBe(2);
+    renderState(dom, elements, model({ status: 'Searching', loading: true }), installed);
+    expect(listRebuilds()).toBe(2);
+  });
+
+  it('does not rebuild when a different installed set yields the same flags', () => {
+    const { dom, elements, listRebuilds } = createDom();
+    renderState(dom, elements, model(), new Set(['github.com/spf13/cobra']));
+    renderState(dom, elements, model(), new Set(['github.com/spf13/cobra', 'github.com/unrelated/mod']));
+    expect(listRebuilds()).toBe(1);
+  });
+
+  it('renders no badge when no installed set is given', () => {
+    const { dom, elements } = createDom();
+    renderState(dom, elements, model());
+    for (const item of elements.results.children) {
+      expect(badgesIn(descOf(item))).toHaveLength(0);
+    }
+  });
+});

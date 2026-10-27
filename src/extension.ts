@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { GoModRepository, createDefaultDeps } from './vscode/goModRepository';
 import { InstalledTreeProvider } from './vscode/installedTreeProvider';
+import { collectInstalledModulePaths } from './core/installedMatch';
 import { SearchController } from './core/searchController';
 import { PkgGoDevSearchClient, nodeHttpsTransport } from './vscode/searchClient';
 import { SearchViewProvider } from './vscode/searchViewProvider';
@@ -25,7 +26,10 @@ export function activate(context: vscode.ExtensionContext): GogetManagerApi {
       void vscode.window.showErrorMessage(message);
     },
   });
-  const searchProvider = new SearchViewProvider(context.extensionUri, searchController);
+  const searchProvider = new SearchViewProvider(context.extensionUri, searchController, {
+    onDidChange: repository.onDidChange,
+    modules: () => collectInstalledModulePaths(repository.snapshot()),
+  });
   const searchRegistration = vscode.window.registerWebviewViewProvider(SearchViewProvider.viewId, searchProvider, {
     webviewOptions: { retainContextWhenHidden: true },
   });
