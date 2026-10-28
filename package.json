@@ -1,15 +1,31 @@
 {
   "name": "goget-manager",
   "displayName": "Goget Manager",
-  "description": "Browse the Go packages installed in your workspace from the Activity Bar.",
+  "description": "Manage packages for Go project visually. Easy to install/uninstall packages.",
   "version": "0.0.1",
-  "publisher": "goget-manager",
+  "publisher": "KurtNguyen",
   "license": "MIT",
-  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kurt-nguyen/goget-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kurt-nguyen/goget-manager/issues"
+  },
+  "homepage": "https://github.com/kurt-nguyen/goget-manager#readme",
+  "keywords": [
+    "go",
+    "golang",
+    "go get",
+    "go.mod",
+    "pkg.go.dev",
+    "package manager"
+  ],
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
+    "Programming Languages",
     "Other"
   ],
   "icon": "imgs/goget-manager-icon.png",

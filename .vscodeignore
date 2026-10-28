@@ -21,3 +21,5 @@ package-lock.json
 *.vsix
 sample-pages/**
 .agents/**
+build.txt
+media/.gitkeep

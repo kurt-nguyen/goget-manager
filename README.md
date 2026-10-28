@@ -68,7 +68,7 @@ This extension does not contribute any settings.
 
 ## Contributing and Issues
 
-Bug reports and suggestions are welcome. Please open an issue at `<REPOSITORY_URL>/issues` and include your VS Code version, your Go version and the relevant lines from the **Goget Manager** output channel (View > Output).
+Bug reports and suggestions are welcome. Please open an issue at <https://github.com/kurt-nguyen/goget-manager/issues> and include your VS Code version, your Go version and the relevant lines from the **Goget Manager** output channel (View > Output).
 
 ## License
 
